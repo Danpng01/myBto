@@ -1,0 +1,22 @@
+{
+  "name": "mybto",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite serve"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.4",
+    "vite": "^5.1.6"
+  },
+  "dependencies": {
+    "firebase": "^10.9.0",
+    "vue-router": "^4.3.0"
+  }
+}

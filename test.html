@@ -3,9 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>myBTO</title>
+    <title>Register and Login</title>
+    <script type="module">
+        // These lines attach the imported functions to the window object, making them globally accessible
+        import { signIn, logOut, register } from './scripts/auth.js';
+        window.signIn = signIn;
+        window.logOut = logOut;
+        window.register = register;
+        // window.register = () => console.log('Register function called');
+
+    </script>
 </head>
 <body>
-    <h1>myBTO2</h1>
+    <h1>Register or Login</h1>
+    <!-- Registration Form -->
+    <div id="registerDiv">
+        <input type="email" id="registerEmail" placeholder="Email for registration">
+        <input type="password" id="registerPassword" placeholder="Password for registration">
+        <button onclick="register(registerEmail.value, registerPassword.value)">Register</button>
+    </div>
+    <!-- Existing Login and Logout functionality here -->
 </body>
 </html>
