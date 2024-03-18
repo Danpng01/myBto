@@ -1,13 +1,13 @@
 <template>
-  <Login />
+  <Registration/>
 </template>
 
 <script>
-import Login from './components/Login.vue';
+import Registration from './components/Registration.vue';
 
 export default {
   components: {
-    Login
+    Registration
   }
 };
 </script>
@@ -65,4 +65,4 @@ header {
     flex-wrap: wrap;
   }
 }
-</style> -->
+</style> -->./components/Registration.vue
