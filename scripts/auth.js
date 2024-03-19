@@ -4,12 +4,13 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, on
 
 export async function signIn(email, password) {
     try {
+        console.log(email)
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         console.log(`Logged in as: ${userCredential.user.email}`);
-        // Additional logic upon successful login
+        return userCredential; // Return the userCredential on success
     } catch (error) {
         console.error("Error signing in:", error.message);
-        // Handle errors, such as displaying a message to the user
+        throw error; // Rethrow the error to handle it in the calling component
     }
 }
 
