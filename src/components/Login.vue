@@ -9,6 +9,7 @@
 
 </template>
 
+
 <script>
 import { ref } from 'vue';
 import { signIn } from '../../scripts/auth.js';
@@ -59,4 +60,5 @@ export default {
     },
 };
 </script>
+
     
