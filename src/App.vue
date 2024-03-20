@@ -1,10 +1,11 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
-import Login from './components/Login.vue'
 </script>
 
 <template>
-<Login />
+  <!-- ensures that Vue Router controls which component is displayed based on the current URL path -->
+  <RouterView />
+
 </template>
 
 <style scoped>
