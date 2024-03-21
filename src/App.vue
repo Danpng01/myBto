@@ -1,73 +1,81 @@
-<script setup>
-import { RouterLink, RouterView } from 'vue-router'
-</script>
-
 <template>
-  <!-- ensures that Vue Router controls which component is displayed based on the current URL path -->
-  <RouterView />
-
+  <div class="entire-container">
+    <div class="header">
+      <Header :progress-percentage="progressPercentage"
+          :completed-tasks="completedTasks"
+          :total-tasks="totalTasks" />
+    </div>
+    <div class="content-container">
+      <Sidebar />
+      <router-view :tasks="tasks" @task-update="handleTaskUpdate"></router-view>
+    </div>
+  </div>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
+<script>
+import Cookies from 'js-cookie';
+import Header from "./components/Header.vue";
+import Sidebar from "./components/Sidebar.vue";
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
+export default {
+  name: 'App',
+  components: {
+    Header,
+    Sidebar,
+  },
+  data() {
+    return {
+      tasks: [],
+    };
+  },
+  created() {
+    this.loadTasksFromCookies();
+  },
+  methods: {
+    loadTasksFromCookies() {
+      const tasksFromCookies = Cookies.get('tasks');
+      if (tasksFromCookies) {
+        this.tasks = JSON.parse(tasksFromCookies);
+      } else {
+        this.tasks = [
+          { id: 1, name: 'Check eligibility', completed: false, link: 'https://example.com/check-eligibility' },
+          { id: 2, name: 'Financial Planning', completed: false, link: 'https://example.com/financial-planning' },
+          { id: 3, name: 'Attend a BTO Launch Briefing', completed: false, link: '' },
+          // other tasks...
+        ];
+      }
+    },
+    handleTaskUpdate(task) {
+      const taskToUpdate = this.tasks.find(t => t.id === task.id);
+      if (taskToUpdate) {
+        taskToUpdate.completed = !taskToUpdate.completed;
+        Cookies.set('tasks', JSON.stringify(this.tasks), { expires: 7 }); // Expires in 7 days
+      }
+    }
+  },
+  computed: {
+    progressPercentage() {
+      const completedTasks = this.tasks.filter(task => task.completed).length;
+      return (completedTasks / this.tasks.length) * 100;
+    },
+    completedTasks() {
+      return this.tasks.filter(task => task.completed).length;
+    },
+    totalTasks() {
+      return this.tasks.length;
+    }
   }
+};
+</script>
 
-  .logo {
-    margin: 0 2rem 0 0;
-  }
 
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+<style>
+.entire-container {
+  background-color: #F0E7C4;
 }
+
+.content-container {
+  display: flex;
+}
+
 </style>
