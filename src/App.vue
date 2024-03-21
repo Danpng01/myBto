@@ -1,14 +1,20 @@
 <template>
   <Login />
+  <div id ="nav">|
+   <router-link to= "/dashboard">Dashboard</router-link>
+   <router-link to = "/"> Login </router-link>
+  </div>
+  <router-view/>
 </template>
 
 <script>
-import Login from './components/Login.vue';
+// import Login from './components/Login.vue';
 
 export default {
-  components: {
-    Login
-  }
+  // components: {
+  //   Login
+  // }
+  name: 'app'
 };
 </script>
 
