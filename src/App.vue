@@ -71,4 +71,4 @@ header {
     flex-wrap: wrap;
   }
 }
-</style> -->
+</style> -->./components/Registration.vue
