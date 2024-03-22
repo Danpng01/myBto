@@ -52,7 +52,7 @@ export default {
               const userCredential = await signIn(email.value, password.value);
               console.log("Login successful", userCredential);
               // Proceed to home for successful login
-              router.push({ name: 'Home' });
+              router.push({ name: 'Dashboard' });
           } catch (error) {
               console.error("Login failed:", error.message);
               // Display an error message or handle the login failure

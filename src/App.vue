@@ -1,21 +1,23 @@
 <template>
-  <div class="entire-container">
+<div class="entire-container">
     <div class="header">
-      <Header :progress-percentage="progressPercentage"
-          :completed-tasks="completedTasks"
-          :total-tasks="totalTasks" />
+      <Header v-if="showHeaderAndSidebar" :progress-percentage="progressPercentage" :completed-tasks="completedTasks" :total-tasks="totalTasks" />
     </div>
-    <div class="content-container">
-      <Sidebar />
-      <router-view :tasks="tasks" @task-update="handleTaskUpdate"></router-view>
-    </div>
+  <div class="content-container">
+    <Sidebar v-if="showHeaderAndSidebar" />
+    <!-- Your content here -->
+    <router-view :tasks="tasks" />
   </div>
+</div>
 </template>
 
 <script>
 import Cookies from 'js-cookie';
 import Header from "./components/Header.vue";
 import Sidebar from "./components/Sidebar.vue";
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+import { RouterLink, RouterView } from 'vue-router';
 
 export default {
   name: 'App',
@@ -30,6 +32,7 @@ export default {
   },
   created() {
     this.loadTasksFromCookies();
+
   },
   methods: {
     loadTasksFromCookies() {
@@ -41,7 +44,7 @@ export default {
           { id: 1, name: 'Check eligibility', completed: false, link: 'https://example.com/check-eligibility' },
           { id: 2, name: 'Financial Planning', completed: false, link: 'https://example.com/financial-planning' },
           { id: 3, name: 'Attend a BTO Launch Briefing', completed: false, link: '' },
-          // other tasks...
+          // Additional tasks as needed...
         ];
       }
     },
@@ -49,7 +52,7 @@ export default {
       const taskToUpdate = this.tasks.find(t => t.id === task.id);
       if (taskToUpdate) {
         taskToUpdate.completed = !taskToUpdate.completed;
-        Cookies.set('tasks', JSON.stringify(this.tasks), { expires: 7 }); // Expires in 7 days
+        Cookies.set('tasks', JSON.stringify(this.tasks), { expires: 7 }); // Set cookie expiration to 7 days
       }
     }
   },
@@ -63,8 +66,14 @@ export default {
     },
     totalTasks() {
       return this.tasks.length;
-    }
-  }
+    },
+    showHeaderAndSidebar() {
+      // List of paths where the Header and Sidebar should not be shown
+      const noHeaderSidebarPaths = ['/', '/register'];
+      // Use `this.$route.path` to access the current route's path
+      return !noHeaderSidebarPaths.includes(this.$route.path);
+    },
+  },
 };
 </script>
 
