@@ -161,34 +161,3 @@ export default {
   
 </style>
     
-
-<!-- <script>
-  export default {
-  name: 'LoginPage',
-  data() {
-    return {
-      username: '',
-      password: ''
-    }
-  },
-  methods: {
-    submitLogin() {
-      // Login logic here
-      console.log(`Login attempt with username: ${this.username} and password: ${this.password}`);
-      // Add your axios call or other methods to connect to your backend here
-    }
-  }
-}
-</script> -->
-
-
-<!-- <template>
-  <h3>This is a Login Page</h3> 
-  <p></p>
-  <input type="email" v-model="email" placeholder="Email">
-  <input type="password" v-model="password" placeholder="Password">
-  <button @click="handleLogin">Login</button>
-  <p></p>
-  <button @click="redirectToRegister">Not registered? Register here</button>
-
-</template> -->

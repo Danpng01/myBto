@@ -158,12 +158,3 @@
 </style>
 
 
-
-<!-- <template>
-    <div>
-      <h3>Registration Page</h3>
-      <input type="email" v-model="email" placeholder="Email">
-      <input type="password" v-model="password" placeholder="Password">
-      <button @click="handleRegister">Register</button>
-    </div>
-  </template> -->

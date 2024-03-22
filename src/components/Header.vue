@@ -14,13 +14,13 @@
     </div>
     <div class="icons-container">
       <button class="settings" title = "Settings">
-        <img src = "/Users/emmanueltan/Desktop/BT3103/test/test/src/assets/settings.png" alt = "Settings">
+        <img src = "../assets/settings.png" alt = "Settings">
       </button>
       <button class="logout" title = "Logout">
-        <img src = "/Users/emmanueltan/Desktop/BT3103/test/test/src/assets/logout.png" alt = "Logout">
+        <img src = "../assets/logout.png" alt = "Logout">
       </button>
       <button class="account" title = "Account Details">
-        <img src = "/Users/emmanueltan/Desktop/BT3103/test/test/src/assets/account.png" alt = "Account">
+        <img src = "../assets/account.png" alt = "Account">
       </button>
     </div>
   </div>
