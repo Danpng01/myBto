@@ -16,7 +16,7 @@
       <button class="settings" title = "Settings">
         <img src = "../assets/settings.png" alt = "Settings">
       </button>
-      <button class="logout" title = "Logout">
+      <button class="logout" title = "Logout" @click="handleSignout">
         <img src = "../assets/logout.png" alt = "Logout">
       </button>
       <button class="account" title = "Account Details">
@@ -27,14 +27,35 @@
 </template>
   
 <script>
+import { useRouter } from 'vue-router';
+import { logOut } from '../../scripts/auth.js';
 export default {
   name: "Header",
   props: {
     progressPercentage: Number,
     completedTasks: Number, 
     totalTasks: Number
+  },
+  setup() {
+    const router = useRouter();
+
+    const handleSignout = async () => {
+      try {
+        await logOut(); // Call the logOut function from auth.js
+        console.log("User signed out");
+        router.push('/'); // Redirect to the login page
+      } catch (error) {
+        console.error("Error signing out:", error.message);
+        // Optionally, handle the error, e.g., show a notification
+      }
+    };
+    return {
+        handleSignout,
+      // ...any other properties or methods...
+    };
   }
-}
+} 
+
 </script>
   
 
