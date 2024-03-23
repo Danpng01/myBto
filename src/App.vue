@@ -1,10 +1,10 @@
 <template>
 <div class="entire-container">
     <div class="header">
-      <Header v-if="showHeaderAndSidebar" :progress-percentage="progressPercentage" :completed-tasks="completedTasks" :total-tasks="totalTasks" />
+      <Header v-if="showHeader" :progress-percentage="progressPercentage" :completed-tasks="completedTasks" :total-tasks="totalTasks" />
     </div>
   <div class="content-container">
-    <Sidebar v-if="showHeaderAndSidebar" />
+    <Sidebar v-if="showSidebar" />
     <!-- Your content here -->
     <router-view :tasks="tasks" />
   </div>
@@ -67,11 +67,17 @@ export default {
     totalTasks() {
       return this.tasks.length;
     },
-    showHeaderAndSidebar() {
-      // List of paths where the Header and Sidebar should not be shown
-      const noHeaderSidebarPaths = ['/', '/register'];
+    showHeader() {
+      // List of paths where the Header should not be shown
+      const noHeaderPaths = ['/', '/register'];
       // Use `this.$route.path` to access the current route's path
-      return !noHeaderSidebarPaths.includes(this.$route.path);
+      return !noHeaderPaths.includes(this.$route.path);
+    },
+    showSidebar() {
+      // List of paths where the Sidebar should not be shown
+      const noSidebarPaths = ['/', '/register', '/settings'];
+      // Use `this.$route.path` to access the current route's path
+      return !noSidebarPaths.includes(this.$route.path);
     },
   },
 };

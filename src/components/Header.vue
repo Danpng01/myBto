@@ -1,7 +1,7 @@
 <template>
   <div class="header">
     <div class="logo">
-      <h1>myBTO</h1>
+      <button class="my-bto-button" @click="redirectToDashboard">myBTO</button>
     </div>
     <div class="progress-section">
       <h2 class="progress-title">My Progress</h2>
@@ -13,7 +13,7 @@
       </div>
     </div>
     <div class="icons-container">
-      <button class="settings" title = "Settings">
+      <button class="settings" title = "Settings" @click="redirectToSettings">
         <img src = "../assets/settings.png" alt = "Settings">
       </button>
       <button class="logout" title = "Logout" @click="handleSignout">
@@ -49,9 +49,19 @@ export default {
         // Optionally, handle the error, e.g., show a notification
       }
     };
+
+    const redirectToSettings = () => {
+          router.push({ name: 'Settings' });
+    };
+
+    const redirectToDashboard = () => {
+          router.push({ name: 'Dashboard' });
+    };
+
     return {
         handleSignout,
-      // ...any other properties or methods...
+        redirectToSettings,
+        redirectToDashboard,
     };
   }
 } 
@@ -71,6 +81,19 @@ export default {
   border-bottom-left-radius: 25px;
   border-bottom-right-radius: 25px;
   box-shadow: 0px 3px #ADABA5;
+}
+
+.my-bto-button {
+  color: #E69B9B; /* Text color */
+  background-color: #EDECEC;
+  border: none; /* No border */
+  padding: 10px 20px; /* Padding inside the button */
+  font-family: Arial, sans-serif; /* Font family */
+  font-size: 40px; /* Text size */
+  font-weight: bold; /* Bold text */
+  border-radius: 20px; /* Rounded corners */
+  cursor: pointer; /* Hand cursor on hover */
+  outline: none; /* Remove outline for clicked state */
 }
 
 .logo {
