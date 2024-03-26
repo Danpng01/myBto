@@ -1,6 +1,8 @@
 // Assuming firebase.js exports the initialized app and possibly other Firebase services
 import { auth, app } from './firebase.js'; // Import the auth instance
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, sendEmailVerification, updateEmail } from "firebase/auth";
+
 
 export async function signIn(email, password) {
     // Define the password validation function
