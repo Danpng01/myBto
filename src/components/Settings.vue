@@ -3,12 +3,16 @@
       <h1 class="settings-title">Settings</h1>
       <div class="settings-item">
         <label for="email">Email:</label>
-        <input type="text" id="email" v-model="userEmail" :readonly="!isChangingEmail" class="input-field" />
+        <input type="text" id="email" v-model="userEmail" :readonly="!isChangingEmail" :class="[isChangingEmail ? 'input-field-greyed-out' : 'input-field']"/>
         <button v-if="!isChangingEmail" @click="startChangeEmail" class="change-button">Change</button>
-        <div v-if="isChangingEmail" >
+        <button v-if="isChangingEmail" @click="endChangeEmail" class="change-button">Cancel</button>
+        <div v-if="isChangingEmail" class="change-email-div">
+          <p>Enter new email: </p>
           <input type="text" id="new-email" v-model="newUserEmail" placeholder="New email" class="input-field" />
-          <input type="password" placeholder="Current password" v-model="currentUserPassword" class="input-field" />
-          <button @click="reauthenticateAndChangeEmail" class="verify-button">Send Verification</button>
+          <p>Confirm with password:</p>
+          <input type="password" placeholder="Password" v-model="currentUserPassword" class="input-field" />
+          <p></p>
+          <button @click="reauthenticateAndChangeEmail" class="verify-button">Save</button>
         </div>
       </div>
       <!-- <div v-if="isChangingEmail" class="settings-item new-email">
@@ -24,7 +28,7 @@
   </template>
   
   <script>
-import { onAuthStateChanged, reauthenticateWithCredential, EmailAuthProvider, sendEmailVerification, updateEmail } from "firebase/auth";
+import { onAuthStateChanged, reauthenticateWithCredential, EmailAuthProvider, updateEmail } from "firebase/auth";
 import { auth } from '../../scripts/firebase.js';
 
 export default {
@@ -40,6 +44,9 @@ export default {
   methods: {
     startChangeEmail() {
       this.isChangingEmail = true;
+    },
+    endChangeEmail() {
+      this.isChangingEmail = false;
     },
     async reauthenticateAndChangeEmail() {
       console.log("reauth")
@@ -60,13 +67,9 @@ export default {
 
         // Proceed with updating the email
         await updateEmail(user, this.newUserEmail);
-        
-        // Send a verification email to the new address
-        // await sendEmailVerification(user, {
-        //   url: 'http://localhost:5173/settings', // Your redirect URL
-        // });
 
-        // alert('Verification email sent. Please check your email to verify the new address.');
+        console.log('Email updated')
+        
         this.userEmail = this.newUserEmail; // Update local state
       } catch (error) {
         console.error('Error reauthenticating and updating email:', error);
@@ -74,33 +77,6 @@ export default {
       }
     },
 
-    // async updateAndVerifyNewEmail() {
-    //   if (!this.newUserEmail) {
-    //     alert('Please enter a new email address.');
-    //     return;
-    //   }
-
-    //   // Re-authenticate user if necessary; this is often required for sensitive operations
-    //   // For simplicity, re-authentication is not fully implemented here.
-    //   // You would need to prompt the user for their current password or use a re-authentication flow suitable for your app.
-      
-    //   try {
-    //     // Update the user's email in Firebase to the new one
-    //     await updateEmail(auth.currentUser, this.newUserEmail);
-    //     // Send a verification email to the new address
-    //     await sendEmailVerification(auth.currentUser, {
-    //       url: 'http://localhost:5173/settings', 
-    //     });
-    //     alert('Verification email sent. Please check your email to verify the new address.');
-        
-    //     // Optionally, store the previous email in case you need to revert
-    //     localStorage.setItem('previousEmail', this.userEmail);
-    //     this.userEmail = this.newUserEmail; // Update local state
-    //   } catch (error) {
-    //     console.error('Error updating and verifying new email:', error);
-    //     alert(error.message);
-    //   }
-    // },
   },
   // mounted() hook listens for changes to the Firebase authentication state with onAuthStateChanged
   mounted() {
@@ -119,6 +95,11 @@ export default {
 </script>
   
   <style scoped>
+
+  .change-email-div {
+    margin-top: 20px;
+  }
+
   .settings-container {
     padding: 2rem;
     margin: auto;
@@ -155,6 +136,15 @@ export default {
     border: 1px solid #e6e6e6;
     border-radius: 8px;
     font-size: 1rem;
+  }
+
+  .input-field-greyed-out {
+    flex-grow: 1;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
+    font-size: 1rem;
+    opacity: 60%;
   }
   
   .change-button {
