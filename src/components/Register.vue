@@ -55,7 +55,7 @@
                   const userCredential = await register(email.value, password2.value);
                   console.log("Registration successful", userCredential);
                   // Proceed to Home for successful registration
-                  router.push({ name: 'Home' });
+                  router.push({ name: 'Dashboard' });
               } catch (error) {
                   console.error("Registration failed:", error.message);
                   // Display an error message or handle the registration failure
@@ -158,12 +158,3 @@
 </style>
 
 
-
-<!-- <template>
-    <div>
-      <h3>Registration Page</h3>
-      <input type="email" v-model="email" placeholder="Email">
-      <input type="password" v-model="password" placeholder="Password">
-      <button @click="handleRegister">Register</button>
-    </div>
-  </template> -->

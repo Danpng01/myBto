@@ -52,7 +52,7 @@ export default {
               const userCredential = await signIn(email.value, password.value);
               console.log("Login successful", userCredential);
               // Proceed to home for successful login
-              router.push({ name: 'Home' });
+              router.push({ name: 'Dashboard' });
           } catch (error) {
               console.error("Login failed:", error.message);
               // Display an error message or handle the login failure
@@ -161,34 +161,3 @@ export default {
   
 </style>
     
-
-<!-- <script>
-  export default {
-  name: 'LoginPage',
-  data() {
-    return {
-      username: '',
-      password: ''
-    }
-  },
-  methods: {
-    submitLogin() {
-      // Login logic here
-      console.log(`Login attempt with username: ${this.username} and password: ${this.password}`);
-      // Add your axios call or other methods to connect to your backend here
-    }
-  }
-}
-</script> -->
-
-
-<!-- <template>
-  <h3>This is a Login Page</h3> 
-  <p></p>
-  <input type="email" v-model="email" placeholder="Email">
-  <input type="password" v-model="password" placeholder="Password">
-  <button @click="handleLogin">Login</button>
-  <p></p>
-  <button @click="redirectToRegister">Not registered? Register here</button>
-
-</template> -->

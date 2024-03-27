@@ -14,9 +14,9 @@
       <ul>
         <li v-for="(task, index) in tasks" :key="task.id" class="task-item">
           <span class="task-index">{{ index + 1 }}.</span>
-          <span :class="{ 'task-name': true, 'completed': task.completed }">
-            <a v-if="task.link" :href="task.link" target="_blank">{{ task.name }}</a>
-            <span v-else>{{ task.name }}</span>
+          <span :class="{ 'task-name': true, 'completed': task.completed, 'clickable': task.link === '' }" @click="task.link === '' ? redirectToComponent(task) : null">
+            <router-link v-if="task.link === ''" :to="{ name: task.routeName }">{{ task.name }}</router-link>
+            <a v-else :href="task.link" target="_blank">{{ task.name }}</a>
           </span>
           <v-checkbox v-model="task.completed" :id="'task-' + task.id" class="task-checkbox"
             color="success"
@@ -57,6 +57,14 @@ export default {
     },
     goToWebsite() {
       window.open('https://homes.hdb.gov.sg/home/landing', '_blank');
+    },
+    redirectToComponent(task) {
+      // Here you need to define where to redirect when the link is empty
+      // For example, if you have a route named 'CheckEligibility' for task 1:
+      if (task.id === 1) {
+        this.$router.push({ name: 'CheckEligibility' });
+      }
+      // Add more conditions if there are other tasks with different routes
     },
   }
 };

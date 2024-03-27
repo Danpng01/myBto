@@ -9,9 +9,9 @@
       <router-view :tasks="tasks" @task-updated="handleTaskUpdate" />
     </div>
   </div>
-  </template>
+</template>
   
-  <script>
+<script>
   import { db, auth } from '../scripts/firebase.js';
   import { setDoc, getDoc, updateDoc, onSnapshot, doc } from 'firebase/firestore';
   import Header from "./components/Header.vue";
@@ -21,21 +21,6 @@
   import { RouterLink, RouterView } from 'vue-router';
   
   export default {
-    /*name: 'App',
-    components: {
-      Header,
-      Sidebar,
-    },
-    data() {
-      return {
-        tasks: [
-          { id: 1, name: 'Check eligibility', completed: false, link: 'https://example.com/check-eligibility' },
-          { id: 2, name: 'Financial Planning', completed: false, link: 'https://example.com/financial-planning' },
-          { id: 3, name: 'Attend a BTO Launch Briefing', completed: false, link: '' },
-          // Additional tasks as needed...
-        ],
-      };
-    },*/
     name: 'App',
     components: {
       Header,
@@ -46,9 +31,9 @@
         user: null,
         // Initialize all tasks, possibly from a local source or hardcoded
         allTasks: [
-          { id: 1, name: 'Apply for an HDB Flat Eligibility (HFE) letter', completed: false, inProgress: false, link: 'https://www.hdb.gov.sg/residential/buying-a-flat/understanding-your-eligibility-and-housing-loan-options/application-for-an-hdb-flat-eligibility-hfe-letter' },
+          { id: 1, name: 'Check Eligibility', completed: false, inProgress: false, link: '' },
           { id: 2, name: 'Financial Planning', completed: false, inProgress: false, link: 'https://www.hdb.gov.sg/residential/buying-a-flat/buying-procedure-for-new-flats/timeline/plan-your-finances' },
-          { id: 3, name: ' Look out for sales launches', completed: false, inProgress: false, link: 'https://www.hdb.gov.sg/about-us/news-and-publications/press-releases/HDB-Launches-5714-Flats-in-Feb-2024-BTO-and-SBF-Exercises' },
+          { id: 3, name: 'Look out for sales launches', completed: false, inProgress: false, link: 'https://www.hdb.gov.sg/about-us/news-and-publications/press-releases/HDB-Launches-5714-Flats-in-Feb-2024-BTO-and-SBF-Exercises' },
           { id: 4, name: 'Submit application', completed: false, inProgress: false, link: 'https://www.hdb.gov.sg/residential/buying-a-flat/buying-procedure-for-new-flats/application' },
           { id: 5, name: 'Receive application outcome', completed: false, inProgress: false, link: 'https://dollarsandsense.sg/bto-application-edition-step-step-guide-buying-hdb-bto-flat/#:~:text=The%20outcome%20of%20your%20BTO,to%20choose%20your%20BTO%20flat.' },
           { id: 6, name: 'Book flat', completed: false, inProgress: false, link: 'https://www.hdb.gov.sg/residential/buying-a-flat/buying-procedure-for-new-flats/booking-of-flat' },
@@ -156,5 +141,13 @@
   .content-container {
     display: flex;
   }
-  
-  </style>
+
+  .entire-container {
+    background-color: #F0E7C4;
+  }
+
+  .content-container {
+    display: flex;
+  }
+
+</style>

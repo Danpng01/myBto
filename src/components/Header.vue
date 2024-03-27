@@ -14,28 +14,48 @@
     </div>
     <div class="icons-container">
       <button class="settings" title = "Settings">
-        <img src = "@/assets/settings.png" alt = "Settings">
+        <img src = "../assets/settings.png" alt = "Settings">
       </button>
-      <button class="logout" title = "Logout">
-        <img src = "@/assets/logout.png" alt = "Logout">
+      <button class="logout" title = "Logout" @click="handleSignout">
+        <img src = "../assets/logout.png" alt = "Logout">
       </button>
       <button class="account" title = "Account Details">
-        <img src = "@/assets/account.png" alt = "Account">
+        <img src = "../assets/account.png" alt = "Account">
       </button>
     </div>
   </div>
 </template>
   
 <script>
-
+import { useRouter } from 'vue-router';
+import { logOut } from '../../scripts/auth.js';
 export default {
   name: "Header",
   props: {
     progressPercentage: Number,
     completedTasks: Number, 
     totalTasks: Number
+  },
+  setup() {
+    const router = useRouter();
+
+    const handleSignout = async () => {
+      try {
+        await logOut(); // Call the logOut function from auth.js
+        console.log("User signed out");
+        router.push('/'); // Redirect to the login page
+      } catch (error) {
+        console.error("Error signing out:", error.message);
+        // Optionally, handle the error, e.g., show a notification
+      }
+    };
+    return {
+        handleSignout,
+      // ...any other properties or methods...
+    };
   }
-}
+} 
+
 </script>
   
 
@@ -103,7 +123,7 @@ export default {
 }
 
 .settings img:hover, .logout img:hover, .account img:hover {
-  transform: scale(1.25); 
+  transform: scale(1.2); 
   transition: transform 0.2s;
 }
 
