@@ -14,19 +14,20 @@
     </div>
     <div class="icons-container">
       <button class="settings" title = "Settings">
-        <img src = "/Users/emmanueltan/Desktop/BT3103/test/test/src/assets/settings.png" alt = "Settings">
+        <img src = "@/assets/settings.png" alt = "Settings">
       </button>
       <button class="logout" title = "Logout">
-        <img src = "/Users/emmanueltan/Desktop/BT3103/test/test/src/assets/logout.png" alt = "Logout">
+        <img src = "@/assets/logout.png" alt = "Logout">
       </button>
       <button class="account" title = "Account Details">
-        <img src = "/Users/emmanueltan/Desktop/BT3103/test/test/src/assets/account.png" alt = "Account">
+        <img src = "@/assets/account.png" alt = "Account">
       </button>
     </div>
   </div>
 </template>
   
 <script>
+
 export default {
   name: "Header",
   props: {
@@ -86,7 +87,7 @@ export default {
 
 .progress {
   height: 100%;
-  background-color: #4caf50;
+  background-color: #E69B9B;
   border-radius: 10px;
 }
 
@@ -100,5 +101,11 @@ export default {
   cursor: pointer;
   margin: 25px;
 }
+
+.settings img:hover, .logout img:hover, .account img:hover {
+  transform: scale(1.25); 
+  transition: transform 0.2s;
+}
+
 </style>
   

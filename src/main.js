@@ -1,14 +1,23 @@
-import './assets/main.css'
+// src/main.js
+import { createApp } from 'vue';
+import { createPinia } from 'pinia';
+import App from './App.vue';
+import router from './router';
+import { db, auth } from '../scripts/firebase'; // Import the initialized Firebase instances
 
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
 
-import App from './App.vue'
-import router from './router'
+// Vuetify
+import { createVuetify } from 'vuetify';
+import 'vuetify/styles';
+import '@mdi/font/css/materialdesignicons.css'; // Import Material Design Icons
 
-const app = createApp(App)
+// Create a Vuetify instance
+const vuetify = createVuetify({});
+  
+const app = createApp(App);
 
-app.use(createPinia())
-app.use(router)
+app.use(createPinia());
+app.use(router);
+app.use(vuetify);
 
-app.mount('#app')
+app.mount('#app');
