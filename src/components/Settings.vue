@@ -71,6 +71,8 @@ export default {
         console.log('Email updated')
         
         this.userEmail = this.newUserEmail; // Update local state
+        this.isChangingEmail = false;
+        alert('Email updated')
       } catch (error) {
         console.error('Error reauthenticating and updating email:', error);
         alert(error.message);
