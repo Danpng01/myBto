@@ -1,8 +1,9 @@
 <template>
     <main class="content">
+
+      <h4>Not sure what you can get? We got you.</h4>
       <div class="search-filter-area">
 
-        <h4>Not sure what you can get? We got you.</h4>
         <select id="Location-dropdown">
           <option selected disabled value="">Location</option>
           <option value="North">North</option>
@@ -40,52 +41,51 @@
       </div>
       
       <!-- Modal for Financial Calculator -->
-      <div class = "modal-wrapper" v-if="isModalOpen" @click="handleWrapperClick">
-        <div class="modal-bg" v-if="isModalOpen" @click.stop>
-          <div class="modal-left">
-            <div class="square-container">
-              <div id = "mortgage-breakdown">
-                <h4> Mortgage Breakdown</h4>
-                <h6> Est Monthly Repayment </h6>
-              </div>
-              <div id = "upfront-costs">
-                <h4> Upfront Costs</h4>
-                <h6> Total Downpayment </h6>
-              </div>
+      <div class="modal" v-if="isModalOpen">
+        <div id="modal-left">
+          <div id="square-container">
+            <div id = "mortgage-breakdown">
+              <h4> Mortgage Breakdown</h4>
+              <h6> Est Monthly Repayment </h6>
+            </div>
+            <div id = "upfront-costs">
+              <h4> Upfront Costs</h4>
+              <h6> Total Downpayment </h6>
             </div>
           </div>
-          <div class="modal-right">
-            <form id = "Modal-Form" @submit.prevent="submitForm">
-              <div class="form-group">
-                <label for="propertyPrice">Intended Property Price:</label><br>
-                <input type="text" id="propertyPrice" v-model="formData.propertyPrice"><br><br>
-              </div>
-
-              <div class="form-group">
-                <label for="tax">Loan Amount:</label><br>
-                <input type="text" id="loan" v-model="formData.loan"><br><br>
-              </div>
-
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="income">Interest Rate:</label><br>
-                  <input type="text" id="interestRate" v-model="formData.interestRate"><br><br>
-                </div>
-
-
-                <div class="form-group">
-                  <label for="income">Loan Tenure:</label><br>
-                  <input type="text" id="loanTenure" v-model="formData.loanTenure"><br><br>
-                </div>
-              </div>
-          
-              <h5>Qualify for any schemes? <a href="your-link-url" style="text-decoration: underline;">Click here to find out more!</a></h5>
-
-              <button @click="calculateMortgage">Calculate</button>
-            </form>
-
-          </div>
         </div>
+        <div id="modal-right">
+          <form id = "Modal-Form" @submit.prevent="submitForm">
+            <div class="form-group">
+              <label for="propertyPrice">Intended Property Price:</label><br>
+              <input type="text" id="propertyPrice" v-model="formData.propertyPrice"><br><br>
+            </div>
+
+            <div class="form-group">
+              <label for="tax">Loan Amount:</label><br>
+              <input type="text" id="loan" v-model="formData.loan"><br><br>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="income">Interest Rate:</label><br>
+                <input type="text" id="interestRate" v-model="formData.interestRate"><br><br>
+              </div>
+
+
+              <div class="form-group">
+                <label for="income">Loan Tenure:</label><br>
+                <input type="text" id="loanTenure" v-model="formData.loanTenure"><br><br>
+              </div>
+            </div>
+        
+            <h5>Qualify for any schemes? <a href="your-link-url" style="text-decoration: underline;">Click here to find out more!</a></h5>
+
+            <button @click="calculateMortgage">Calculate</button>
+          </form>
+
+        </div>
+        <button class="close-button" @click="closeModal">&#10005;</button>
       </div>
 
       <div class = "search-output">
@@ -120,7 +120,7 @@ export default {
     openModal() {
       this.isModalOpen = true; // This method opens the modal
     },
-    handleWrapperClick() {
+    closeModal() {
       this.isModalOpen = false;
     },
     search() {
@@ -190,7 +190,7 @@ export default {
   /* More styles as needed to cover the whole screen */
 }
 
-.modal-bg {
+.modal {
   box-sizing: border-box; /* Include padding and borders in the element's total width and height */
   display: flex;
   justify-content: space-between;
@@ -209,7 +209,7 @@ export default {
   z-index: 1000; /* Ensure it's above other content */
 }
 
-.modal-right {
+#modal-right {
   flex-basis: 40%; /* Take up half the space of the modal */
   padding: 20px; /* Padding inside the children */
   display: flex;
@@ -221,28 +221,23 @@ export default {
   justify-content: center; /* Center content vertically */
 }
 
-.modal-left {
+#modal-left {
   flex-basis: 60%; /* Take up 60% of the modal's width */
   border-right: 2px solid #000; /* Right border */
-  display: flex; /* Enable flexbox */
-  justify-content: center; /* Center horizontally */
-  align-items: center; /* Center vertically */
-  height: 100%; /* Take up full height of its container */
+  display: flex; /* Use Flexbox to align children */
+  justify-content: center; /* Center children horizontally */
+  align-items: center; /* Center children vertically */
 }
 
-
-.square-container {
+#square-container {
   border: 4px solid #000; /* 4px solid border */
   width: 40vw; /* Set a specific width */
-  height: 40vh; /* Make the height fill the entire viewport height */
+  height: 50vh; /* Set a specific height */
   padding: 20px; /* Add some padding inside the square */
   display: flex; /* Use flexbox to align content */
   flex-direction: column; /* Stack children vertically */
   justify-content: center; /* Center content vertically */
   align-items: center; /* Center content horizontally */
-  position: fixed; /* Position it fixed on the left side */
-  left: 0; /* Align to the left side of the viewport */
-  top: 0; /* Align to the top of the viewport */
 }
 
 #mortgage-breakdown {
@@ -270,6 +265,16 @@ export default {
 
 .form-group { 
   padding: 10px;
+}
+
+.close-button {
+  position: absolute; /* Position the button absolutely within its positioned parent */
+  top: 10px; /* Space from the top of the container */
+  right: 10px; /* Space from the right of the container */
+  background: none; /* Remove default button background */
+  border: none; /* Remove default button border */
+  font-size: 24px; /* Adjust the size as needed */
+  cursor: pointer; /* Change cursor to pointer when hovering over the button */
 }
 
 </style>
