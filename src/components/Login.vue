@@ -11,36 +11,69 @@
         </div>
         <div class="login-form">
           <form @submit.prevent="submitLogin">
-            <input type="text" v-model="username" placeholder="Username / email">
+            <input type="email" v-model="email" placeholder="Email">
             <input type="password" v-model="password" placeholder="Password">
-            <button type="submit">Sign in</button>
+            <button type="submit" @click="handleLogin">Sign in</button>
             <div class="register-link">
-              Not registered? <a href="/register">Create an account</a>
+              Not registered? <button @click="redirectToRegister">Register Here</button>
             </div>
           </form>
         </div>
       </div>
     </div>
 </template>
-  
+
 <script>
-  export default {
-  name: 'LoginPage',
-  data() {
-    return {
-      username: '',
-      password: ''
-    }
-  },
-  methods: {
-    submitLogin() {
-      // Login logic here
-      console.log(`Login attempt with username: ${this.username} and password: ${this.password}`);
-      // Add your axios call or other methods to connect to your backend here
-    }
-  }
+import { ref } from 'vue';
+import { signIn } from '../../scripts/auth.js';
+import { useRouter } from 'vue-router';
+
+
+function validateEmail(email) {
+  const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(email);
 }
+
+export default {
+  name: 'Login',
+  setup() {
+      const router = useRouter();
+      const email = ref('');
+      const password = ref('');
+
+      const handleLogin = async () => {
+          console.log(`Email input: ${email.value}`); // Debug email value
+
+          if (!validateEmail(email.value)) {
+              alert("Please enter a valid email address.");
+              return;
+          }
+          try {
+              const userCredential = await signIn(email.value, password.value);
+              console.log("Login successful", userCredential);
+              // Proceed to home for successful login
+              router.push({ name: 'Dashboard' });
+          } catch (error) {
+              console.error("Login failed:", error.message);
+              // Display an error message or handle the login failure
+          }
+      };
+
+      const redirectToRegister = () => {
+          router.push({ name: 'Register' });
+      };
+
+      // Make sure to return everything that will be used in the template -  ensure that the template can access
+      return {
+          email,
+          password,
+          handleLogin,
+          redirectToRegister,
+      };
+  },
+};
 </script>
+
   
 <style scoped>
 .login-page {
@@ -150,3 +183,4 @@
 }
   
 </style>
+    
