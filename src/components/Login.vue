@@ -82,6 +82,7 @@ export default {
     align-items: center;
     justify-content: center;
     display: flex;
+    
 }
 
 .login-images {
@@ -112,10 +113,13 @@ export default {
   padding: 1rem; 
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   height: 87vh;
+  border-radius: 15px;
+  overflow: hidden;
 }
   
 .login-header img.logo {
-  width: 200px; 
+  margin-bottom: 300px;
+  width: 300px; 
 }
 
 .login-header h1 {
@@ -128,8 +132,9 @@ export default {
   display: flex;
   flex-direction: column;
   margin-left: 10px;
-  width: 100%;
+  width: 500px;
   height: 200%;
+  margin-bottom: 400px;
 }
 
 .login-form input[type="text"],
@@ -157,6 +162,24 @@ export default {
 .register-link {
   text-align: center;
   color: #333; 
+}
+
+.navigation-link {
+  text-align: center;
+}
+
+.navigation-link a:hover {
+  background-color: #4a90e2; /* Changes background on hover */
+  color: white; /* Changes text color on hover */
+}
+
+.navigation-link a {
+  color: #4a90e2; /* A nice visible blue color for the link */
+  text-decoration: none; /* Removes underline from links */
+  padding: 0.5rem 1rem;
+  border: 2px solid #4a90e2; /* Gives the link a border */
+  border-radius: 4px; /* Rounds the corners of the border */
+  transition: background-color 0.3s, color 0.3s; /* Smooth transition for hover effects */
 }
   
 </style>

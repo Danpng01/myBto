@@ -16,6 +16,7 @@
   import { setDoc, getDoc, updateDoc, onSnapshot, doc } from 'firebase/firestore';
   import Header from "./components/Header.vue";
   import Sidebar from "./components/Sidebar.vue";
+  import Calendar from "./components/Calendar.vue";
   import { computed } from 'vue';
   import { useRoute } from 'vue-router';
   import { RouterLink, RouterView } from 'vue-router';
@@ -23,6 +24,7 @@
   export default {
     name: 'App',
     components: {
+      Calendar,
       Header,
       Sidebar,
     },
@@ -159,3 +161,4 @@
   }
 
 </style>
+
