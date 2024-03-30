@@ -1,8 +1,8 @@
 <template>
     <main class="content">
-      <h4>Not sure what you can get? We got you.</h4>
       <div class="search-filter-area">
 
+        <h4>Not sure what you can get? We got you.</h4>
         <select id="Location-dropdown">
           <option selected disabled value="">Location</option>
           <option value="North">North</option>
@@ -34,8 +34,8 @@
         <button @click="search">Search</button>
       </div>
 
-      <h4>Click here for a step-by-step financial breakdown!</h4>
       <div class="financial-calculator-button">
+        <h4>Click here for a step-by-step financial breakdown!</h4>
         <button @click="openModal">Financial calculator</button>
       </div>
       
@@ -89,7 +89,7 @@
       </div>
 
       <div class = "search-output">
-        
+
       </div>
 
     </main>
