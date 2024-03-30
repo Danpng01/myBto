@@ -7,6 +7,7 @@ import Calendar from '../components/Calendar.vue';
 import Recommendations from '../components/Recommendations.vue';
 import Settings from '../components/Settings.vue';
 import { auth } from '../../scripts/firebase';
+import CheckEligibility from '../components/CheckEligibility.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -15,6 +16,7 @@ const router = createRouter({
     { path: '/calendar', name: 'Calendar', component: Calendar,  meta: { requiresAuth: true }},
     { path: '/recommendations', name: 'Recommendations', component: Recommendations,  meta: { requiresAuth: true }},
     { path: '/settings', name: 'Settings', component: Settings,   meta: { requiresAuth: true }},
+    { path: '/check-eligibility', name: 'CheckEligibility', component: CheckEligibility, meta: { requiresAuth: true }},
     {
       path: '/',
       name: 'Login',

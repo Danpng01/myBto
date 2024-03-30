@@ -130,7 +130,7 @@ export default {
 
 .progress {
   height: 100%;
-  background-color: #4caf50;
+  background-color: #E69B9B;
   border-radius: 10px;
 }
 
@@ -144,5 +144,11 @@ export default {
   cursor: pointer;
   margin: 25px;
 }
+
+.settings img:hover, .logout img:hover, .account img:hover {
+  transform: scale(1.2); 
+  transition: transform 0.2s;
+}
+
 </style>
   

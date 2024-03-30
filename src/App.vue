@@ -6,91 +6,156 @@
   <div class="content-container">
     <Sidebar v-if="showSidebar" />
     <!-- Your content here -->
-    <router-view :tasks="tasks" />
+    <router-view :tasks="tasks" @task-updated="handleTaskUpdate"/>
   </div>
 </div>
 </template>
-
+  
 <script>
-import Cookies from 'js-cookie';
-import Header from "./components/Header.vue";
-import Sidebar from "./components/Sidebar.vue";
-import { computed } from 'vue';
-import { useRoute } from 'vue-router';
-import { RouterLink, RouterView } from 'vue-router';
+  import { db, auth } from '../scripts/firebase.js';
+  import { setDoc, getDoc, updateDoc, onSnapshot, doc } from 'firebase/firestore';
+  import Header from "./components/Header.vue";
+  import Sidebar from "./components/Sidebar.vue";
+  import { computed } from 'vue';
+  import { useRoute } from 'vue-router';
+  import { RouterLink, RouterView } from 'vue-router';
+  
+  export default {
+    name: 'App',
+    components: {
+      Header,
+      Sidebar,
+    },
+    data() {
+      return {
+        user: null,
+        // Initialize all tasks, possibly from a local source or hardcoded
+        allTasks: [
+          { id: 1, name: 'Check Eligibility', completed: false, inProgress: false, link: '' },
+          { id: 2, name: 'Financial Planning', completed: false, inProgress: false, link: 'https://www.hdb.gov.sg/residential/buying-a-flat/buying-procedure-for-new-flats/timeline/plan-your-finances' },
+          { id: 3, name: 'Look out for sales launches', completed: false, inProgress: false, link: 'https://www.hdb.gov.sg/about-us/news-and-publications/press-releases/HDB-Launches-5714-Flats-in-Feb-2024-BTO-and-SBF-Exercises' },
+          { id: 4, name: 'Submit application', completed: false, inProgress: false, link: 'https://www.hdb.gov.sg/residential/buying-a-flat/buying-procedure-for-new-flats/application' },
+          { id: 5, name: 'Receive application outcome', completed: false, inProgress: false, link: 'https://dollarsandsense.sg/bto-application-edition-step-step-guide-buying-hdb-bto-flat/#:~:text=The%20outcome%20of%20your%20BTO,to%20choose%20your%20BTO%20flat.' },
+          { id: 6, name: 'Book flat', completed: false, inProgress: false, link: 'https://www.hdb.gov.sg/residential/buying-a-flat/buying-procedure-for-new-flats/booking-of-flat' },
+          { id: 7, name: 'Sign Agreement for Lease', completed: false, inProgress: false, link: 'https://www.hdb.gov.sg/residential/buying-a-flat/buying-procedure-for-new-flats/sign-agreement-for-lease' },
+          { id: 8, name: 'Collect keys to flat', completed: false, inProgress: false, link: 'https://www.hdb.gov.sg/residential/buying-a-flat/buying-procedure-for-new-flats/key-collection' },
+        ],
+      };
+    },
+    created() {
+      this.authListener();
+      },
+    methods: {
+      authListener() {
+        auth.onAuthStateChanged(user => {
+          if (user) {
+            this.user = user;
+            this.loadTasksFromFirestore();
+          } else {
+            this.user = null;
+            this.tasks = [];
+          }
+        });
+      },
+      loadTasksFromFirestore() {
+        if (!this.user) {
+          console.error('No user signed in to load tasks from Firestore.');
+          return;
+        }
 
-export default {
-  name: 'App',
-  components: {
-    Header,
-    Sidebar,
-  },
-  data() {
-    return {
-      tasks: [],
-    };
-  },
-  created() {
-    this.loadTasksFromCookies();
+        const userDocRef = doc(db, 'users', this.user.uid);
+        onSnapshot(userDocRef, (docSnapshot) => {
+          if (docSnapshot.exists()) {
+            const firestoreTasks = docSnapshot.data().tasks;
+            firestoreTasks.forEach((firestoreTask) => {
+              let localTask = this.allTasks.find(t => t.id === firestoreTask.id);
+              if (localTask) {
+                localTask.completed = firestoreTask.completed;
+                localTask.inProgress = firestoreTask.inProgress; // Make sure to also update the inProgress status
+              } else {
+                this.allTasks.push({
+                  ...firestoreTask,
+                  inProgress: firestoreTask.inProgress ?? false // Set default inProgress if not present
+                });
+              }
+            });
+            this.$forceUpdate(); // This may help to ensure the reactivity of the Vue instance
+          } else {
+            console.log('No tasks found in Firestore for the user.');
+          }
+        });
+      },
+      async handleTaskUpdate(updatedTask) {
+        if (!this.user) {
+          console.error('No user signed in to update tasks in Firestore.');
+          return;
+        }
 
-  },
-  methods: {
-    loadTasksFromCookies() {
-      const tasksFromCookies = Cookies.get('tasks');
-      if (tasksFromCookies) {
-        this.tasks = JSON.parse(tasksFromCookies);
-      } else {
-        this.tasks = [
-          { id: 1, name: 'Check eligibility', completed: false, link: 'https://example.com/check-eligibility' },
-          { id: 2, name: 'Financial Planning', completed: false, link: 'https://example.com/financial-planning' },
-          { id: 3, name: 'Attend a BTO Launch Briefing', completed: false, link: '' },
-          // Additional tasks as needed...
-        ];
+        const userDocRef = doc(db, 'users', this.user.uid);
+
+        try {
+          // Find the task in your local model and update it
+          const taskIndex = this.allTasks.findIndex(task => task.id === updatedTask.id);
+          if (taskIndex !== -1) {
+            this.allTasks[taskIndex] = { ...this.allTasks[taskIndex], ...updatedTask };
+          }
+
+          // Sync the updated tasks array with Firestore, creating the document if it doesn't exist
+          await setDoc(userDocRef, { tasks: this.allTasks }, { merge: true });
+
+          console.log("Firestore updated with new task statuses.");
+        } catch (error) {
+          console.error("Error updating Firestore:", error);
+        }
       }
     },
-    handleTaskUpdate(task) {
-      const taskToUpdate = this.tasks.find(t => t.id === task.id);
-      if (taskToUpdate) {
-        taskToUpdate.completed = !taskToUpdate.completed;
-        Cookies.set('tasks', JSON.stringify(this.tasks), { expires: 7 }); // Set cookie expiration to 7 days
-      }
-    }
-  },
-  computed: {
-    progressPercentage() {
-      const completedTasks = this.tasks.filter(task => task.completed).length;
-      return (completedTasks / this.tasks.length) * 100;
-    },
-    completedTasks() {
-      return this.tasks.filter(task => task.completed).length;
-    },
-    totalTasks() {
-      return this.tasks.length;
-    },
-    showHeader() {
+    computed: {
+      progressPercentage() {
+        const completedTasks = this.tasks.filter(task => task.completed).length;
+        return (completedTasks / this.tasks.length) * 100;
+      },
+      completedTasks() {
+        return this.tasks.filter(task => task.completed).length;
+      },
+      totalTasks() {
+        return this.tasks.length;
+      },
+      showHeader() {
       // List of paths where the Header should not be shown
       const noHeaderPaths = ['/', '/register'];
       // Use `this.$route.path` to access the current route's path
       return !noHeaderPaths.includes(this.$route.path);
+      },
+      showSidebar() {
+        // List of paths where the Sidebar should not be shown
+        const noSidebarPaths = ['/', '/register', '/settings'];
+        // Use `this.$route.path` to access the current route's path
+        return !noSidebarPaths.includes(this.$route.path);
+      },
+      tasks() {
+        // If you want to separate out a computed property for tasks
+        return this.allTasks;
+      },
     },
-    showSidebar() {
-      // List of paths where the Sidebar should not be shown
-      const noSidebarPaths = ['/', '/register', '/settings'];
-      // Use `this.$route.path` to access the current route's path
-      return !noSidebarPaths.includes(this.$route.path);
-    },
-  },
-};
-</script>
+  };
+  </script>
+  
+  
+  <style>
+  .entire-container {
+    background-color: #F0E7C4;
+  }
+  
+  .content-container {
+    display: flex;
+  }
 
+  .entire-container {
+    background-color: #F0E7C4;
+  }
 
-<style>
-.entire-container {
-  background-color: #F0E7C4;
-}
-
-.content-container {
-  display: flex;
-}
+  .content-container {
+    display: flex;
+  }
 
 </style>
