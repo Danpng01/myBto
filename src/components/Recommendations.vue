@@ -44,14 +44,85 @@
       <div class="modal" v-if="isModalOpen">
         <div id="modal-left">
           <div id="square-container">
+
             <div id = "mortgage-breakdown">
               <h4> Mortgage Breakdown</h4>
               <h6> Est Monthly Repayment </h6>
+              <span id = "Total-Downpayment" v-if="totalDownpayment > 0">S$ {{ totalDownpayment }} / mo</span>
+                
+              <!-- Progress bar for Downpayment with two colors -->
+              <div class="progress-bar-wrapper">
+                <div class="progress-bar-background">
+                  <!-- Bar for downpaymentPercentage -->
+                  <div 
+                    class="progress-bar-part downpayment" 
+                    :style="{ width: downpaymentPercentage + '%' }"
+                  >
+                    <span v-if="downpaymentPercentage > 0">{{ downpaymentPercentage }}%</span>
+                  </div>
+                  <!-- Bar for loanPercentage -->
+                  <div 
+                    class="progress-bar-part loan-amount" 
+                    :style="{ width: loanPercentage + '%' }"
+                  >
+                    <span v-if="loanPercentage > 0">{{ loanPercentage }}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Legend for the progress bars -->
+              <div class="progress-bar-legend">
+                <div class="legend-item">
+                  <div class="legend-color downpayment"></div>
+                  <span>Downpayment</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-color loan-amount"></div>
+                  <span>Loan amount</span>
+                </div>
+              </div>
             </div>
+
             <div id = "upfront-costs">
+
               <h4> Upfront Costs</h4>
               <h6> Total Downpayment </h6>
+              <span id = "Total-Downpayment" v-if="totalDownpayment > 0">S$ {{ totalDownpayment }}</span>
+                
+              <!-- Progress bar for Downpayment with two colors -->
+              <div class="progress-bar-wrapper">
+                <div class="progress-bar-background">
+                  <!-- Bar for downpaymentPercentage -->
+                  <div 
+                    class="progress-bar-part downpayment" 
+                    :style="{ width: downpaymentPercentage + '%' }"
+                  >
+                    <span v-if="downpaymentPercentage > 0">{{ downpaymentPercentage }}%</span>
+                  </div>
+                  <!-- Bar for loanPercentage -->
+                  <div 
+                    class="progress-bar-part loan-amount" 
+                    :style="{ width: loanPercentage + '%' }"
+                  >
+                    <span v-if="loanPercentage > 0">{{ loanPercentage }}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Legend for the progress bars -->
+              <div class="progress-bar-legend">
+                <div class="legend-item">
+                  <div class="legend-color downpayment"></div>
+                  <span>Downpayment</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-color loan-amount"></div>
+                  <span>Loan amount</span>
+                </div>
+              </div>
+
             </div>
+
           </div>
         </div>
         <div id="modal-right">
@@ -110,10 +181,16 @@ export default {
       location: null,
       income: null,
       size: null,
-      propertyPrice: null, // Added for property price input
-      loan: null,           // Added for tax input
-      interestRate: null,   // Added for income input
-      loanTenure: null   // Added for income input
+
+      /* General information for the financial calculator */
+      propertyPrice: 0, // Added for property price input
+      loan: 0,           // Added for tax input
+      interestRate: 0,   // Added for income input
+      loanTenure: 0,   // Added for income input
+      /* Information for the "upfront costs" portion */
+      totalDownpayment: 0, // Initialize to 0
+      downpaymentPercentage: 0, // Initialize to 0
+      loanPercentage: 0, // Initialize to 0
     };
   },
   methods: {
@@ -128,8 +205,24 @@ export default {
       // This will use propertyPrice, tax, and annualIncome for the search
     },
     calculateMortgage() {
-      // pass
-    }
+      this.calculateLoanAmount();
+    },
+    calculateLoanAmount() {
+      // Placeholder for actual logic
+      const propertyPrice = parseFloat(this.formData.propertyPrice);
+      const loan = parseFloat(this.formData.loan);
+      // MUST CHANGE THIS IS A PLACEHOLDER
+      this.totalDownpayment = parseFloat(this.formData.loan);
+      
+      // Ensure the values are valid numbers
+      if (!isNaN(propertyPrice) && !isNaN(loan) && propertyPrice > 0) {
+        this.downpaymentPercentage = parseFloat(((propertyPrice - loan) / propertyPrice) * 100).toFixed(1);
+        this.loanPercentage = parseFloat((loan / propertyPrice) * 100).toFixed(1);
+      }
+    },
+    calculateDownpayment() {
+      return (this.upfrontCostsPercentage / 100) * this.totalCost;
+    },
   }
 };
 
@@ -180,16 +273,6 @@ export default {
   border-color: #E69B9B;
   color: #fff;
 }
-
-.modal-wrapper {
-  position: fixed; /* or absolute depending on your layout */
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  /* More styles as needed to cover the whole screen */
-}
-
 .modal {
   box-sizing: border-box; /* Include padding and borders in the element's total width and height */
   display: flex;
@@ -217,8 +300,9 @@ export default {
   align-items: center;
 }
 
-.Modal-Form {
+#Modal-Form {
   justify-content: center; /* Center content vertically */
+  border: #000;
 }
 
 #modal-left {
@@ -230,7 +314,7 @@ export default {
 }
 
 #square-container {
-  border: 4px solid #000; /* 4px solid border */
+  border: 2px solid #000; /* 4px solid border */
   width: 40vw; /* Set a specific width */
   height: 50vh; /* Set a specific height */
   padding: 20px; /* Add some padding inside the square */
@@ -238,6 +322,7 @@ export default {
   flex-direction: column; /* Stack children vertically */
   justify-content: center; /* Center content vertically */
   align-items: center; /* Center content horizontally */
+  border-radius: 15px; /* Rounded corners */
 }
 
 #mortgage-breakdown {
@@ -267,6 +352,10 @@ export default {
   padding: 10px;
 }
 
+input[type="text"] {
+  border: 1px solid black; /* This sets the border color to black */
+}
+
 .close-button {
   position: absolute; /* Position the button absolutely within its positioned parent */
   top: 10px; /* Space from the top of the container */
@@ -276,5 +365,61 @@ export default {
   font-size: 24px; /* Adjust the size as needed */
   cursor: pointer; /* Change cursor to pointer when hovering over the button */
 }
+
+#Total-Downpayment {
+  margin-left: auto;
+}
+
+.progress-bar-wrapper {
+  margin: 10px 0;
+}
+
+.progress-bar-background {
+  background-color: #e0e0e0;
+  border-radius: 10px; /* Increased border-radius for rounded edges */
+  display: flex; /* Align inner divs horizontally */
+  height: 30px; /* Increased height for a thicker bar */
+  overflow: hidden; /* Ensures the child divs are contained within the border radius */
+}
+
+.progress-bar-part {
+  text-align: center;
+  line-height: 30px; /* Adjust line-height to match the new height for vertical centering */
+  color: black;
+  transition: width 0.5s ease-in-out;
+  display: flex;
+  justify-content: center; /* Center text horizontally */
+  align-items: center; /* Center text vertically */
+}
+
+.downpayment {
+  background-color: #E69B9B; /* Green color for the 25% */
+  border-radius: 10px 0 0 10px; /* Rounded edges on the left side */
+}
+
+.loan-amount {
+  background-color:#ccc; /* Blue color for the 75% */
+  border-radius: 0 10px 10px 0; /* Rounded edges on the right side */
+}
+
+.progress-bar-legend {
+  display: flex;
+  justify-content: center; /* Adjust as needed for your layout */
+  align-items: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-right: 40px; /* Space between legend items */
+}
+
+.legend-color {
+  width: 15px; /* Circle size */
+  height: 15px; /* Circle size */
+  border-radius: 50%; /* Make it round */
+  margin-right: 5px; /* Space between circle and label */
+}
+
 
 </style>
