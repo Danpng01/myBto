@@ -45,6 +45,9 @@
   background-color: white;
   text-decoration: none;
   color: #000;
+
+  /* new addition */
+  padding-right: 40px;
   transition: background-color 0.3s, color 0.3s; 
 }
 

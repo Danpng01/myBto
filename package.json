@@ -15,6 +15,7 @@
     "@mdi/font": "^7.4.47",
     "firebase": "^10.9.0",
     "js-cookie": "^3.0.5",
+    "node": "^18.20.0",
     "pinia": "^2.1.7",
     "save": "^2.9.0",
     "vue": "^3.4.21",
@@ -31,7 +32,7 @@
     "eslint-plugin-vue": "^9.17.0",
     "jsdom": "^24.0.0",
     "prettier": "^3.0.3",
-    "vite": "^5.1.6",
+    "vite": "^5.2.7",
     "vite-plugin-vue-devtools": "^7.0.18",
     "vitest": "^1.4.0"
   }
