@@ -73,7 +73,9 @@ export default {
       this.isChangingPassword = false;
     },
     async reauthenticateAndChangeEmail() {
+
       console.log("reauth")
+
       if (!this.newUserEmail || !this.currentUserPassword) {
         alert('Please enter your new email and current password.');
         return;
@@ -96,6 +98,7 @@ export default {
         
         this.userEmail = this.newUserEmail; // Update local state
         this.isChangingEmail = false;
+        this.newUserEmail = '';
         alert('Email updated')
       } catch (error) {
         console.error('Error reauthenticating and updating email:', error);
@@ -121,8 +124,12 @@ export default {
 
           // Make sure to use this.newUserPassword, as that's what you've verified above
           await updatePassword(user, this.newUserPassword);
-          alert('Password successfully updated.');
           this.isChangingPassword = false;
+          this.newUserPassword = '';
+          this.currentUserPassword = '';
+          this.retypeUserPassword = '';
+          alert('Password successfully updated.');
+
         } catch (error) {
           console.error('Error updating password:', error);
           alert('Failed to update password. Please try again.');

@@ -47,6 +47,7 @@
           const router = useRouter();
           const email = ref('');
           const password2 = ref('');
+          const password = ref('');
   
           const handleRegister = async () => {
               console.log(`Email input: ${email.value}`); // Debug email value
@@ -56,15 +57,25 @@
                   alert("Please enter a valid email address.");
                   return;
               }
-              try {
-                  const userCredential = await register(email.value, password2.value);
-                  console.log("Registration successful", userCredential);
-                  // Proceed to Home for successful registration
-                  router.push({ name: 'Dashboard' });
-              } catch (error) {
-                  console.error("Registration failed:", error.message);
-                  // Display an error message or handle the registration failure
+              console.log(`New Password: '${password.value}'`);
+              console.log(`Retype Password: '${password2.value}'`);
+
+              if (password.value !== password2.value) {
+                alert('Passwords do not match.');
+                return;
               }
+              else {
+                try {
+                    const userCredential = await register(email.value, password2.value);
+                    console.log("Registration successful", userCredential);
+                    // Proceed to Home for successful registration
+                    router.push({ name: 'Dashboard' });
+                    alert('Registration successful');
+                } catch (error) {
+                    console.error("Registration failed:", error.message);
+                    // Display an error message or handle the registration failure
+                }
+              } 
           };
 
         const redirectToLogin = () => {
@@ -73,6 +84,7 @@
   
           return {
               email,
+              password,
               password2,
               handleRegister,
               redirectToLogin,
