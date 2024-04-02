@@ -14,6 +14,21 @@
           <p></p>
           <button @click="reauthenticateAndChangeEmail" class="verify-button">Save</button>
         </div>
+        <div>
+          <button v-if="!isChangingPassword" class="change-button" @click="startChangePassword">Change my password</button>
+          <button v-if="isChangingPassword" class="change-button" @click="endChangePassword">Cancel</button>
+          <div v-if="isChangingPassword" class="change-email-div">
+            <p>Enter current password: </p>
+            <input type="password" placeholder="Password" v-model="currentUserPassword" class="input-field" />
+            <p>Enter new password: </p>
+            <input type="password" v-model="newUserPassword" placeholder="New Password" class="input-field" />
+            <p>Re-type password:</p>
+            <input type="password" placeholder="Re-enter Password" v-model="retypeUserPassword" class="input-field" />
+            <p></p>
+            <button @click="updatePassword" class="verify-button">Save</button>
+        </div>
+
+        </div>
       </div>
       <!-- <div v-if="isChangingEmail" class="settings-item new-email">
         <label for="new-email">New Email:</label>
@@ -28,7 +43,7 @@
   </template>
   
   <script>
-import { onAuthStateChanged, reauthenticateWithCredential, EmailAuthProvider, updateEmail } from "firebase/auth";
+import { onAuthStateChanged, reauthenticateWithCredential, EmailAuthProvider, updateEmail, updatePassword } from "firebase/auth";
 import { auth } from '../../scripts/firebase.js';
 
 export default {
@@ -38,7 +53,10 @@ export default {
       userEmail: '',
       newUserEmail: '',
       currentUserPassword: '', // For re-authentication before email update
+      newUserPassword: '',
+      retypeUserPassword: '',
       isChangingEmail: false,
+      isChangingPassword: false,
     };
   },
   methods: {
@@ -47,6 +65,12 @@ export default {
     },
     endChangeEmail() {
       this.isChangingEmail = false;
+    },
+    startChangePassword() {
+      this.isChangingPassword = true;
+    },
+    endChangePassword() {
+      this.isChangingPassword = false;
     },
     async reauthenticateAndChangeEmail() {
       console.log("reauth")
@@ -76,6 +100,33 @@ export default {
       } catch (error) {
         console.error('Error reauthenticating and updating email:', error);
         alert(error.message);
+      }
+    },
+    async updatePassword() {
+      console.log("change pw");
+      if (!this.newUserPassword || !this.retypeUserPassword) {
+        alert('Please enter your new password and re-type new password.');
+        return;
+      } else if (this.newUserPassword !== this.retypeUserPassword) {
+        alert('Passwords do not match.');
+        return;
+      } else {
+        const user = auth.currentUser;
+        // Ensure you're using this.currentPassword, which should be obtained from an input field
+        const credential = EmailAuthProvider.credential(user.email, this.currentUserPassword);
+
+        try {
+          // Re-authenticate the user with the current password
+          await reauthenticateWithCredential(user, credential);
+
+          // Make sure to use this.newUserPassword, as that's what you've verified above
+          await updatePassword(user, this.newUserPassword);
+          alert('Password successfully updated.');
+          this.isChangingPassword = false;
+        } catch (error) {
+          console.error('Error updating password:', error);
+          alert('Failed to update password. Please try again.');
+        }
       }
     },
 
@@ -110,6 +161,18 @@ export default {
     min-height: 100vh;
     background-color: #F0E7C4; /* Adjust to match your cream background color */
     margin-top: 10px;
+  }
+
+  .settings-container input[type="text"],
+  .settings-container input[type="password"] {
+    padding: 1rem;
+    margin-bottom: 20px;
+    margin-left: 10px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: #fff;
+
   }
   
   .settings-title {
@@ -151,6 +214,7 @@ export default {
   
   .change-button {
     padding: 0.75rem 1.5rem;
+    margin-top: 20px;
     background-color: #FFC0CB; /* Light pink color */
     border: none;
     border-radius: 8px;
