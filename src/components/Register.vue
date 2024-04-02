@@ -6,7 +6,7 @@
         </div>
       <div class="registration-container">
         <div class="registration-header">
-          <img src="@/assets/logo.png" alt="HDB Logo" class="logo">
+          <img src="@/assets/hdb logo.png" alt="HDB Logo" class="logo">
           <h1>myBTO</h1>
         </div>
         <div class="registration-form">
@@ -73,6 +73,7 @@
 
 
 <style scoped>
+
 .registration-page {
   width: 100vw;
   height: 100vh;
