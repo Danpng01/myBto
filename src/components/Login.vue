@@ -150,13 +150,13 @@ export default {
   border: 1px solid black;
 }
 
-.login-container {
+/* .login-container {
   justify-content: center;
   height: auto;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-}
+} */
   
 .login-header img.logo {
   margin-bottom: 20px;

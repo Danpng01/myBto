@@ -1,25 +1,30 @@
 <template>
     <div class="registration-page">
+      <div class="logo-container">          
+        <img src="@/assets/hdb logo.png" alt="HDB Logo" class="logo">
+      </div>
         <div class="registration-images">
-            <img src="@/assets/top_image.jpeg" alt="Top Image" class="top-image">
-            <img src="@/assets/bottom_image.jpeg" alt="Bottom Image" class="bottom-image">
+            <!-- <img src="@/assets/top_image.jpeg" alt="Top Image" class="top-image">
+            <img src="@/assets/bottom_image.jpeg" alt="Bottom Image" class="bottom-image"> -->
+            <img src="@/assets/bto pic.jpg" alt="HBD image" class="side-image">
         </div>
       <div class="registration-container">
-        <div class="registration-header">
-          <img src="@/assets/hdb logo.png" alt="HDB Logo" class="logo">
-          <h1>myBTO</h1>
-        </div>
-        <div class="registration-form">
-          <form @submit.prevent="submitRegistration">
-            <div v-if="passwordMismatch" class="alert alert-danger">Passwords do not match! Please retry.</div>
-            <input type="email" v-model="email" placeholder="Email">
-            <input type="password" v-model="password" placeholder="Password">
-            <input type="password" v-model="password2" placeholder="Re-enter Password">
-            <button type="register" :disabled="passwordMismatch" @click="handleRegister">Register</button> 
-            <div class="login-link">
-              Already have an account? <a href="/">Log in</a>
-            </div>
-          </form>
+        <div class="grey-container">
+          <div class="registration-header">
+            <h1>myBTO</h1>
+          </div>
+          <div class="registration-form">
+            <form @submit.prevent="submitRegistration">
+              <div v-if="passwordMismatch" class="alert alert-danger">Passwords do not match! Please retry.</div>
+              <input type="email" v-model="email" placeholder="Email">
+              <input type="password" v-model="password" placeholder="Password">
+              <input type="password" v-model="password2" placeholder="Re-enter Password">
+              <button type="register" :disabled="passwordMismatch" @click="handleRegister">Register</button> 
+              <div class="login-link">
+                Already have an account? <button @click="redirectToLogin">Log in</button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
@@ -61,11 +66,16 @@
                   // Display an error message or handle the registration failure
               }
           };
+
+        const redirectToLogin = () => {
+          router.push({ name: 'Login' });
+        };
   
           return {
               email,
               password2,
               handleRegister,
+              redirectToLogin,
           };
       },
   };
@@ -73,6 +83,35 @@
 
 
 <style scoped>
+
+.logo {
+  width: 200px; /* Adjust the width as needed */
+  height: auto; /* This will maintain the aspect ratio of the logo */
+  /* If the logo is still not the right size, you can fine-tune the width property. */
+}
+
+.logo-container {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 20px; /* Adjust the padding to control the distance from the top and right edges */
+}
+
+.grey-container {
+  background-color: #EDECEC;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: fit-content; 
+  margin: auto; 
+  font-weight: bold;
+}
 
 .registration-page {
   width: 100vw;
@@ -83,40 +122,51 @@
 }
 
 .registration-images {
-  display: flex;
-  flex-direction: column;
+  position: relative; /* Ensure that your image is positioned relative to this container */
+  width: 50vw; /* Keep the original width */
+  height: 100vh; /* Set the height to cover the viewport */
+  overflow: hidden; /* This will crop the image */
 }
 
-.registration-images,
+
 .registration-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  flex: 1; /* Each child will take up an equal amount of space */
+  flex: 1;
   object-fit: contain;
 }
 
-.top-image,
+/* .top-image,
 .bottom-image {
   width: 50vw; 
   height: 45vh; 
   margin-right: 10px;
+} */
+
+.side-image {
+  height: 100%; /* Stretch the image to the height of the container */
+  object-fit: cover; /* Cover the area without stretching the image */
+  width: 100%; /* Take the full width to avoid repeating */
+  filter: blur(2px); /* Apply a slight blur effect */
+  border: 1px solid black;
 }
 
-.registration-container {
+/* .registration-container {
   justify-content: center; 
   align-items: center;
   padding: 1rem; 
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   height: 87vh;
-}
+} */
  
 .registration-header img.logo {
-  width: 200px; 
+  margin-bottom: 20px;
+  width: 300px; 
 }
 
 .registration-header h1 {
-  color: #333; 
+  color: #f0919f; 
   text-align: center;
   margin-bottom: 20px;
 }
@@ -125,16 +175,18 @@
   display: flex;
   flex-direction: column;
   margin-left: 10px;
-  width: 100%;
-  height: 300%; /* Adjusted for potentially more fields */
+  width: 500px;
+  height: auto;
+  margin-bottom: 20px;
 }
 
-.registration-form input[type="text"],
+.registration-form input[type="email"],
 .registration-form input[type="password"] {
   padding: 1rem;
   margin-bottom: 20px;
   border: 1px solid #ccc;
   border-radius: 10px;
+  background-color: #fff;
 }
 
 .registration-form button {
@@ -154,6 +206,23 @@
 .login-link {
   text-align: center;
   color: #333; 
+  font-weight: bold;
+}
+
+.login-link button {
+  background-color: transparent; /* Remove the background */
+  color: #f0919f; /* Set the text color to pink */
+  border: none;
+  cursor: pointer;
+  padding: 0; /* Remove padding if you don't want space around the text */
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.login-link button:hover {
+  color: #000; /* Change text color to black on hover */
+  background-color: transparent;
+  text-shadow: 2px 2px 8px #888888; /* Add a shadow to the text on hover */
 }
 
 </style>
