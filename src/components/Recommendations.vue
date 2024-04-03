@@ -6,11 +6,8 @@
 
         <select id="Location-dropdown" v-model="location">
           <option selected disabled value="">Location</option>
-          <option value="North">North</option>
-          <option value="South">South</option>
-          <option value="East">East</option>
-          <option value="West">West</option>
           <option value="Bedok">Bedok</option>
+          <option value="Woodlands">Woodlands</option>
           <option value="Toa-payoh">Toa Payoh</option>
           <option value="Any">Any</option>
         </select>
@@ -148,7 +145,7 @@
             </div><br>
 
             <div class="form-row">
-              <div class = "form-row-helper">
+              <div>
                 <label for="income">Interest Rate:</label>
                 <div class="input-container">
                   <div class="calculator-symbol">%<span class="divider-line"></span></div>
@@ -156,7 +153,7 @@
                 </div>
               </div>
 
-              <div class = "form-row-helper">
+              <div>
                 <label for="income">Loan Tenure:</label>
                 <div class="input-container">
                   <div class="calculator-symbol">Yrs<span class="divider-line"></span></div>
@@ -179,14 +176,15 @@
         
         <div v-if="houses && houses.length">
           <div v-for="(house, index) in houses" :key="index" class="house-item">
-            <img :src="house.imageUrl" alt="House image" class="house-image"/>
+            <img :src="house.imageLink" alt="House image" class="house-image"/>
             <div class="house-details">
-              <p class="house-title">{{ house.title }}</p>
+              <!-- Interpolation inside <p> tags is correct -->
               <p class="house-location">{{ house.location }}</p>
               <p class="house-size">{{ house.size }}</p>
-              <p class="house-price">From ${{ house.price }}</p>
+              <p class="house-price">From ${{ house.lowerPrice }}</p>
             </div>
-            <a href={{ house.link }} class="house-link">
+            <!-- Use v-bind for dynamic attributes -->
+            <a :href="house.webLink" class="house-link">
               <span class="arrow-button">></span>
             </a>
           </div>
@@ -214,11 +212,11 @@ export default {
         income: ''
       },
       isModalOpen: false,
-      location: '',
-      income: '',
+      location: 'Any',
+      income: 'Any',
       maxprice: 1000000000,
       minprice: 0,
-      size: '',
+      size: 'Any',
       sentenceVisible: false,
       /* General information for the financial calculator */
       propertyPrice: 0, // Added for property price input
@@ -244,9 +242,7 @@ export default {
     },
     search() {
       this.sentenceVisible = true;
-
       const housesCol = collection(db, 'houseSearch');
-
       let q = query(housesCol);
 
       // Dynamically add conditions to the query based on input values
@@ -256,23 +252,23 @@ export default {
       if (this.location !== 'Any') {
         q = query(q, where('location', '==', this.location));
       }
-      if (!isNaN(parseFloat(this.maxprice))) { // Ensure maxprice is a valid number
-        q = query(q, where('price', '<=', parseFloat(this.maxprice)));
+      /* if (!isNaN(parseFloat(this.maxprice))) { // Ensure maxprice is a valid number
+        q = query(q, where('upperPrice', '<=', parseFloat(this.maxprice)));
       }
       if (!isNaN(parseFloat(this.minprice))) { // Ensure minprice is a valid number
-        q = query(q, where('price', '>=', parseFloat(this.minprice)));
-      }
+        q = query(q, where('lowerPrice', '>=', parseFloat(this.minprice)));
+      }  */
 
       getDocs(q)
-        .then(querySnapshot => {
-          const houses = querySnapshot.docs.map(doc => doc.data());
-          this.houses = houses;
-        })
-        .catch(error => {
-          console.error('Error fetching documents:', error);
-          this.sentenceVisible = false;
-        });
-
+      .then(querySnapshot => {
+        const houses = querySnapshot.docs.map(doc => doc.data());
+        this.houses = houses;
+        console.log('Houses length:', this.houses.length); // Log inside the .then() block
+      })
+      .catch(error => {
+        console.error('Error fetching documents:', error);
+        this.sentenceVisible = false;
+      });
     },
     calculateMortgage() {
       this.calculateLoanAmount();
@@ -352,6 +348,7 @@ export default {
   box-sizing: border-box; /* Include padding and borders in the element's total width and height */
   display: flex;
   justify-content: space-between;
+  padding: 10px;
   align-items: stretch;
   background-color: #fefefe;
   border-radius: 10px;
@@ -368,12 +365,12 @@ export default {
 }
 
 #modal-right {
-  flex-basis: 60%; /* Adjust to your modal's specific width */
-  padding: 20px;
+  background-color: #fff; /* Background color for the right side */
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column; /* Stack children vertically */
+  align-items: center; /* Center children horizontally */
+  padding: 20px; /* Padding inside the modal */
+  margin: auto; /* Center the modal in the available space */
 }
 
 #Modal-Form {
@@ -387,11 +384,11 @@ export default {
   display: flex; /* Use Flexbox to align children */
   justify-content: center; /* Center children horizontally */
   align-items: center; /* Center children vertically */
+  padding: 15px;
 }
 
 #square-container {
   border: 2px solid #000; /* 4px solid border */
-  width: 40vw; /* Set a specific width */
   height: 50vh; /* Set a specific height */
   padding: 20px; /* Add some padding inside the square */
   display: flex; /* Use flexbox to align content */
@@ -413,15 +410,9 @@ export default {
   padding-bottom: 10px; /* Add some padding below the content */
   margin-bottom: 10px; /* Add some space below the border */
 }
-
-
-.modal-right {
-  background-color: #fff; /* Background color for the right side */
-  padding-left: 20px; /* Padding inside the right child */
-}
-
 .form-row {
   display: flex;
+  max-width: 40vw;
 }
 
 input[type="text"] {
@@ -551,6 +542,7 @@ input[type="text"] {
   box-shadow: inset 0 0 5px rgba(0,0,0,0.2); /* subtle inner shadow */
   position: relative; /* Needed for absolute positioning of children */
   margin-right: 15px;
+  max-width: 40vw;
 }
 
 .calculator-symbol {
@@ -572,20 +564,16 @@ input[type="text"] {
 .input-container input {
   border: none;
   outline: none;
-  flex: 1; /* Fill the rest of the container */
+  /* flex: 1; /* Fill the rest of the container */
   font-size: 1em;
 }
 
-.form-row-helper{
-  margin-bottom: 10px; /* Adjust this value as needed */
-}
-
-/* Remove spinner for number inputs */
+/* Remove spinner for number inputs 
 .input-container input[type=number]::-webkit-inner-spin-button,
 .input-container input[type=number]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-
+*/
 
 </style>
