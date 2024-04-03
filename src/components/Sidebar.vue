@@ -21,7 +21,8 @@
     flex-direction: column;
     justify-content: space-between;
     width: 250px;
-    height: 100vh;
+    min-height: 100vh;
+    height: auto;
     margin-top: 30px;
     padding-left: 40px;
     border-right: 1px solid #B3AC93;

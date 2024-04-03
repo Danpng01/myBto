@@ -14,10 +14,9 @@
       <ul>
         <li v-for="(task, index) in tasks" :key="task.id" class="task-item">
           <span class="task-index">{{ index + 1 }}.</span>
-          <span :class="{ 'task-name': true, 'completed': task.completed, 'clickable': task.link === '' }" @click="task.link === '' ? redirectToComponent(task) : null">
-            <router-link v-if="task.link === ''" :to="{ name: task.routeName }">{{ task.name }}</router-link>
-            <a v-else :href="task.link" target="_blank">{{ task.name }}</a>
-          </span>
+          <router-link :to="{ name: getRouteName(task.id) }" class="task-name" v-bind:class="{ 'completed': task.completed }">
+            {{ task.name }}
+          </router-link>
           <v-checkbox v-model="task.completed" :id="'task-' + task.id" class="task-checkbox"
             color="success"
             base-color="green"
@@ -52,19 +51,24 @@ export default {
   },
   methods: {
     updateTask(taskIndex) {
-      // Emit an event with the updated task
       this.$emit('task-updated', this.tasks[taskIndex]);
     },
     goToWebsite() {
       window.open('https://homes.hdb.gov.sg/home/landing', '_blank');
     },
-    redirectToComponent(task) {
-      // Here you need to define where to redirect when the link is empty
-      // For example, if you have a route named 'CheckEligibility' for task 1:
-      if (task.id === 1) {
-        this.$router.push({ name: 'CheckEligibility' });
-      }
-      // Add more conditions if there are other tasks with different routes
+    getRouteName(taskId) {
+      const taskRouteMap = {
+        1: 'CheckEligibility',
+        2: 'FinancialPlanning',
+        3: 'SalesLaunches',
+        4: 'Application',
+        5: 'ApplicationOutcome',
+        6: 'BookFlat',
+        7: 'Lease',
+        8: 'Keys',
+      };
+
+      return taskRouteMap[taskId] || '';
     },
   }
 };
@@ -85,11 +89,11 @@ export default {
 }
 
 .notification-button {
-  position: absolute; /* Absolute positioning relative to the closest positioned ancestor */
-  top: 150px; /* Adjust as needed */
-  right: 150px; /* Adjust as needed */
-  background-color: transparent; /* Remove any background */
-  min-width: 0; /* Remove any minimum width requirements */
+  position: absolute;
+  top: 150px;
+  right: 150px;
+  background-color: transparent;
+  min-width: 0;
 }
 
 .tasks {
@@ -104,7 +108,7 @@ export default {
 .task-item {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* This will space out the items */
+  justify-content: space-between;
   margin-bottom: 25px;
 }
 
@@ -114,13 +118,11 @@ export default {
 }
 
 .task-name {
+  text-decoration: underline;
+  color: black;
+  cursor: pointer;
   flex-grow: 1;
   margin-right: 150px; 
-}
-
-.task-name a {
-  text-decoration: underline;
-  color: black; 
 }
 
 .task-name.completed {
@@ -129,7 +131,7 @@ export default {
 }
 
 .task-checkbox { 
-  margin-right: 105px; /* Adjust spacing as needed */
+  margin-right: 105px;
 }
 
 .checkbox-labels {
@@ -141,11 +143,11 @@ export default {
 }
 
 .checkbox-label.inProgress-label {
-  margin-left: 60px; /* Adjust as needed */
+  margin-left: 60px;
 }
 
 .checkbox-label,
 .checkbox-label.inProgress-label {
-  font-weight: bold; /* This will make the text bold */
+  font-weight: bold;
 }
 </style>
