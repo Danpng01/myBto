@@ -26,7 +26,8 @@
             :class="['day', day.class]"
             @click="selectDay(day)"
           >
-            {{ day.date }}
+            <span>{{ day.date }}</span>
+            <span v-if="foundDay" class="event-dot"></span>
           </div>
         </div>
         <div class="goto-today">
@@ -50,7 +51,7 @@
             <h3 class="event-title">{{ event.title }}</h3>
           </div>
           <div class="event-time">
-            <span class="event-time">{{ event.time }}</span>
+            <span class="event-time">{{ event.timeFrom }} to {{ event.timeTo }}</span>
           </div>
         </div>
         <div v-if="eventsOfSelectedDay.length === 0" class="no-event">
@@ -75,7 +76,7 @@
             type="text"
             placeholder="Event Time From"
             class="event-time-from"
-            v-model="newEvent.time"
+            v-model="newEvent.timeFrom"
           />
         </div>
         <div class="add-event-input">
@@ -83,7 +84,7 @@
             type="text"
             placeholder="Event Time To"
             class="event-time-to"
-            v-model="newEvent.time"
+            v-model="newEvent.timeTo"
           />
         </div>
       </div>
@@ -95,6 +96,9 @@
 </template>
 
 <script>
+import { db, auth } from '../../scripts/firebase.js'; // Import the auth instance
+import { collection, addDoc, getDocs, query, where, deleteDoc, doc } from 'firebase/firestore'; // Import Firestore functions
+
 export default {
   name: "Calendar",
   data() {
@@ -105,7 +109,7 @@ export default {
       selectedDay: new Date().getDate(),
       events: [],
       showAddEvent: false,
-      newEvent: { title: '', time: '' },
+      newEvent: { title: '', timeFrom: '', timeTo: ''},
       inputDate: '',
     };
   },
@@ -151,6 +155,17 @@ export default {
         });
       }
 
+      this.events.forEach(event => {
+        const eventDate = event.date.getDate();
+        const eventMonth = event.date.getMonth();
+        const eventYear = event.date.getFullYear();
+
+        const foundDay = days.find(day => day.date === eventDate && day.month === eventMonth && day.year === eventYear);
+        if (foundDay) {
+          foundDay.hasEvent = true;
+        }
+      });
+
       return days;
     },
     selectedDayString() {
@@ -175,17 +190,67 @@ export default {
       this.showAddEvent = !this.showAddEvent;
     },
     addEvent() {
-      if (!this.newEvent.title || !this.newEvent.time) {
-        alert("Please fill in all fields.");
-        return;
+      try {
+          // Check if user is authenticated
+          const user = auth.currentUser;
+          if (!user) {
+              alert('Please log in to add events.');
+              return;
+          }
+
+          // Validate event data
+          if (!this.newEvent.title || !this.newEvent.timeFrom || !this.newEvent.timeTo) {
+              alert('Please fill in all fields.');
+              return;
+          }
+
+          // Get a reference to the events collection
+          const eventsRef = collection(db, 'events'); // Assuming 'events' is the name of your collection
+
+          // Add a new document to the events collection with user's ID
+          addDoc(eventsRef, {
+              userId: user.uid,
+              title: this.newEvent.title,
+              timeFrom: this.newEvent.timeFrom,
+              timeTo: this.newEvent.timeTo,
+              date: new Date(this.currentYear, this.currentMonth, this.selectedDay), // Make sure this creates a Date object
+              // Add other event data properties as needed
+          });
+
+          console.log('Event added successfully!');
+          
+          // Clear input fields and hide add event form
+          this.newEvent = { title: '', timeFrom: '', timeTo: '' };
+          this.showAddEvent = false;
+      } catch (error) {
+          console.error('Error adding event: ', error);
       }
-      this.events.push({
-        title: this.newEvent.title,
-        time: this.newEvent.time,
-        date: new Date(this.currentYear, this.currentMonth, this.selectedDay),
-      });
-      this.newEvent = { title: '', time: '' };
-      this.showAddEvent = false;
+      this.fetchEvents();
+    },
+    async fetchEvents() {
+      try {
+        // Check if user is authenticated
+        const user = auth.currentUser;
+        if (!user) {
+          alert('Please log in to fetch events.');
+          return;
+        }
+
+        // Create a query to get events for the current user
+        const q = query(collection(db, 'events'), where('userId', '==', user.uid));
+
+        // Fetch events from Firestore
+        const querySnapshot = await getDocs(q);
+
+        // Update the events array with fetched events
+        this.events = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            date: doc.data().date.toDate() // Convert timestamp to Date object
+          }));
+      } catch (error) {
+        console.error('Error fetching events: ', error);
+      }
     },
     prevMonth() {
       if (this.currentMonth === 0) {
@@ -243,13 +308,23 @@ export default {
       }
       alert("Invalid Date");
     },
-    deleteEvent(eventIndex) {
-        this.events.splice(eventIndex, 1); // Remove the event from the array
-      
+    async deleteEvent(eventIndex) {
+      try {
+        // Delete the event from Firestore
+        const eventId = this.events[eventIndex].id;
+        // Delete the document from Firestore using its ID
+        // Assuming 'events' is the name of your collection
+        await deleteDoc(doc(db, 'events', eventId));
+
+        // Fetch events again after deleting an event
+        await this.fetchEvents();
+      } catch (error) {
+        console.error('Error deleting event: ', error);
+      }
     },
   },
   mounted() {
-    // Initialization or API calls if needed
+    this.fetchEvents();
   },
 };
 </script>
@@ -591,7 +666,7 @@ color: #878895;
 margin-left: 15px;
 pointer-events: none;
 }
-.events .event:hover .event-time {
+.events .event:hover .event-time{
 color: #fff;
 }
 /* add tick in event after */
@@ -822,6 +897,14 @@ font-weight: 600;
 }
 .credits a:hover {
 text-decoration: underline;
+}
+.event-dot {
+  width: 10px; /* Adjust the width */
+  height: 10px; /* Adjust the height */
+  background-color: red; /* Or any color you prefer */
+  border-radius: 50%; /* Ensures it's a circle */
+  display: inline-block; /* Allows it to be placed inline with the date */
+  margin-left: 5px; /* Adjust the spacing between the date and the dot */
 }
 </style>
 
