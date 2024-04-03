@@ -23,7 +23,7 @@
           <div
             v-for="(day, index) in daysOfMonth"
             :key="index"
-            :class="['day', day.class]"
+            :class="['day', day.class, { event: hasEvent(day.date) }]"
             @click="selectDay(day)"
           >
             <span>{{ day.date }}</span>
@@ -76,7 +76,7 @@
             type="text"
             placeholder="Event Time From"
             class="event-time-from"
-            v-model="newEvent.timeFrom"
+            v-model="newEvent.startTime"
           />
         </div>
         <div class="add-event-input">
@@ -84,7 +84,7 @@
             type="text"
             placeholder="Event Time To"
             class="event-time-to"
-            v-model="newEvent.timeTo"
+            v-model="newEvent.endTime"
           />
         </div>
       </div>
@@ -109,9 +109,17 @@ export default {
       selectedDay: new Date().getDate(),
       events: [],
       showAddEvent: false,
-      newEvent: { title: '', timeFrom: '', timeTo: ''},
+      newEvent: { title: '', startTime: '', endTime: '' },
       inputDate: '',
     };
+  },
+  watch: {
+    'newEvent.startTime'(newValue) {
+      this.newEvent.startTime = this.formatTime(newValue);
+    },
+    'newEvent.endTime'(newValue) {
+      this.newEvent.endTime = this.formatTime(newValue);
+    },
   },
   computed: {
     monthYear() {
@@ -199,7 +207,7 @@ export default {
           }
 
           // Validate event data
-          if (!this.newEvent.title || !this.newEvent.timeFrom || !this.newEvent.timeTo) {
+          if (!this.newEvent.title || !this.newEvent.startTime || !this.newEvent.endTime) {
               alert('Please fill in all fields.');
               return;
           }
@@ -211,8 +219,8 @@ export default {
           addDoc(eventsRef, {
               userId: user.uid,
               title: this.newEvent.title,
-              timeFrom: this.newEvent.timeFrom,
-              timeTo: this.newEvent.timeTo,
+              startTime: this.newEvent.startTime,
+              endTime: this.newEvent.endTime,
               date: new Date(this.currentYear, this.currentMonth, this.selectedDay), // Make sure this creates a Date object
               // Add other event data properties as needed
           });
@@ -220,7 +228,7 @@ export default {
           console.log('Event added successfully!');
           
           // Clear input fields and hide add event form
-          this.newEvent = { title: '', timeFrom: '', timeTo: '' };
+          this.newEvent = { title: '', startTime: '', endTime: '' };
           this.showAddEvent = false;
       } catch (error) {
           console.error('Error adding event: ', error);
@@ -321,6 +329,24 @@ export default {
       } catch (error) {
         console.error('Error deleting event: ', error);
       }
+    },
+    hasEvent(date) {
+      // This is a simplified example. You'll need to adjust it based on your actual data structure.
+      return this.events.some(event => new Date(event.date).getDate() === date);
+    },
+    formatTime(value) {
+      let numericValue = value.replace(/\D/g, ''); // Remove non-numeric characters
+      let formattedValue = '';
+
+      // Insert colon after every 2 digits but limit to HH:mm format
+      if (numericValue.length > 0) {
+        formattedValue += numericValue.substring(0, 2); // Hours part
+      }
+      if (numericValue.length > 2) {
+        formattedValue += ':' + numericValue.substring(2, 4); // Minutes part
+      }
+
+      return formattedValue;
     },
   },
   mounted() {
