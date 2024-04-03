@@ -23,7 +23,7 @@
           <div
             v-for="(day, index) in daysOfMonth"
             :key="index"
-            :class="['day', day.class]"
+            :class="['day', day.class, { event: hasEvent(day.date) }]"
             @click="selectDay(day)"
           >
             {{ day.date }}
@@ -75,7 +75,7 @@
             type="text"
             placeholder="Event Time From"
             class="event-time-from"
-            v-model="newEvent.time"
+            v-model="newEvent.startTime"
           />
         </div>
         <div class="add-event-input">
@@ -83,7 +83,7 @@
             type="text"
             placeholder="Event Time To"
             class="event-time-to"
-            v-model="newEvent.time"
+            v-model="newEvent.endTime"
           />
         </div>
       </div>
@@ -105,9 +105,17 @@ export default {
       selectedDay: new Date().getDate(),
       events: [],
       showAddEvent: false,
-      newEvent: { title: '', time: '' },
+      newEvent: { title: '', startTime: '', endTime: '' },
       inputDate: '',
     };
+  },
+  watch: {
+    'newEvent.startTime'(newValue) {
+      this.newEvent.startTime = this.formatTime(newValue);
+    },
+    'newEvent.endTime'(newValue) {
+      this.newEvent.endTime = this.formatTime(newValue);
+    },
   },
   computed: {
     monthYear() {
@@ -175,16 +183,17 @@ export default {
       this.showAddEvent = !this.showAddEvent;
     },
     addEvent() {
-      if (!this.newEvent.title || !this.newEvent.time) {
+      if (!this.newEvent.title || !this.newEvent.startTime || !this.newEvent.endTime) {
         alert("Please fill in all fields.");
         return;
       }
+      const eventTime = `${this.newEvent.startTime} - ${this.newEvent.endTime}`;
       this.events.push({
         title: this.newEvent.title,
-        time: this.newEvent.time,
+        time: eventTime,
         date: new Date(this.currentYear, this.currentMonth, this.selectedDay),
       });
-      this.newEvent = { title: '', time: '' };
+      this.newEvent = { title: '', startTime: '', endTime: '' };
       this.showAddEvent = false;
     },
     prevMonth() {
@@ -246,6 +255,24 @@ export default {
     deleteEvent(eventIndex) {
         this.events.splice(eventIndex, 1); // Remove the event from the array
       
+    },
+    hasEvent(date) {
+      // This is a simplified example. You'll need to adjust it based on your actual data structure.
+      return this.events.some(event => new Date(event.date).getDate() === date);
+    },
+    formatTime(value) {
+      let numericValue = value.replace(/\D/g, ''); // Remove non-numeric characters
+      let formattedValue = '';
+
+      // Insert colon after every 2 digits but limit to HH:mm format
+      if (numericValue.length > 0) {
+        formattedValue += numericValue.substring(0, 2); // Hours part
+      }
+      if (numericValue.length > 2) {
+        formattedValue += ':' + numericValue.substring(2, 4); // Minutes part
+      }
+
+      return formattedValue;
     },
   },
   mounted() {
