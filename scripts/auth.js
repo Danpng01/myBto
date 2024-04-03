@@ -2,6 +2,8 @@
 import { auth, app } from './firebase.js'; // Import the auth instance
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 import { getAuth, sendEmailVerification, updateEmail } from "firebase/auth";
+import { defineStore } from 'pinia';
+
 
 
 export async function signIn(email, password) {
@@ -93,6 +95,7 @@ export async function register(email, password) {
         throw(error);
     }
 }
+
 
 // Handle authentication state changes
 onAuthStateChanged(auth, (user) => {

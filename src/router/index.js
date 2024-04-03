@@ -8,6 +8,7 @@ import Recommendations from '../components/Recommendations.vue';
 import Settings from '../components/Settings.vue';
 import { auth } from '../../scripts/firebase';
 import CheckEligibility from '../components/CheckEligibility.vue';
+import { useAuthStore } from '../stores/authStore';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -30,16 +31,29 @@ const router = createRouter({
   ]
 })
 
-// Ensure user has to be logged in to access the other components
-// 'beforeEach' guard runs before every route transition. It checks if the target route (to) requires authentication by looking for requiresAuth in the route's meta fields.
-router.beforeEach((to, from, next) => {
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  const isAuthenticated = auth.currentUser;
-
-  if (requiresAuth && !isAuthenticated) {
-    next('/'); // Redirect to the login page
+// Enhanced 'beforeEach' guard to handle waiting for auth
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore();
+  if (!authStore.authReady) {
+    // Wait for authentication to be ready
+    await new Promise(resolve => {
+      const unsubscribe = authStore.$subscribe((mutation, state) => {
+        if (state.authReady) {
+          unsubscribe();
+          resolve();
+        }
+      });
+    });
+  }
+  // Redirect to dashboard if user is already logged in and trying to access login/register
+  if ((to.path === '/' || to.path === '/register') && authStore.user) {
+    next('/dashboard');
+  } else if (to.meta.requiresAuth && !authStore.user) {
+    // Redirect to login if user is not logged in and trying to access a protected route
+    next('/');
   } else {
-    next(); // Proceed to the route
+    // Proceed as normal for all other cases
+    next();
   }
 });
 
