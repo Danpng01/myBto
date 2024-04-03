@@ -4,32 +4,38 @@
       <h4>Not sure what you can get? We got you.</h4>
       <div class="search-filter-area">
 
-        <select id="Location-dropdown">
+        <select id="Location-dropdown" v-model="location">
           <option selected disabled value="">Location</option>
           <option value="North">North</option>
           <option value="South">South</option>
           <option value="East">East</option>
           <option value="West">West</option>
+          <option value="Bedok">Bedok</option>
+          <option value="Toa-payoh">Toa Payoh</option>
+          <option value="Any">Any</option>
         </select>
 
 
-        <select id="Income-dropdown">
+        <select id="Income-dropdown" v-model="income">
           <option selected disabled value="">Income</option>
           <option value="0-5k">0-5k</option>
           <option value="5k-10k">5k-10k</option>
           <option value="10k-12k">10k-12k</option>
           <option value="12k-14k">12k-14k</option>
+          <option value="5k">5000</option>
           <option disabled value="">>14K [Please check your eligibility based on income ceiling]</option>
+          <option value="Any">Any</option>
         </select>
 
 
-        <select id="Size-dropdown">
+        <select id="Size-dropdown" v-model="size">
           <option selected disabled value="">Number of Bedrooms</option>
           <option value="1 Room">1 Room</option>
           <option value="2 Room">2 Room</option>
           <option value="3 Room">3 Room</option>
           <option value="4 Room">4 Room</option>
           <option value="5 Room">5 Room</option>
+          <option value="Any">Any</option>
         </select>
 
         <button @click="search">Search</button>
@@ -125,41 +131,66 @@
 
           </div>
         </div>
+
         <div id="modal-right">
           <form id = "Modal-Form" @submit.prevent="submitForm">
-            <div class="form-group">
-              <label for="propertyPrice">Intended Property Price:</label><br>
-              <input type="text" id="propertyPrice" v-model="formData.propertyPrice"><br><br>
-            </div>
 
-            <div class="form-group">
-              <label for="tax">Loan Amount:</label><br>
-              <input type="text" id="loan" v-model="formData.loan"><br><br>
-            </div>
+            <label for="propertyPrice">Intended Property Price:</label><br>
+            <div class="input-container">
+              <div class="calculator-symbol">SGD<span class="divider-line"></span></div>
+              <input type="text" id="propertyPrice" v-model="formData.propertyPrice">
+            </div><br>
+
+            <label for="tax">Loan Amount:</label><br>
+            <div class="input-container">
+              <div class="calculator-symbol">SGD<span class="divider-line"></span></div>
+              <input type="text" id="loan" v-model="formData.loan">
+            </div><br>
 
             <div class="form-row">
-              <div class="form-group">
-                <label for="income">Interest Rate:</label><br>
-                <input type="text" id="interestRate" v-model="formData.interestRate"><br><br>
+              <div class = "form-row-helper">
+                <label for="income">Interest Rate:</label>
+                <div class="input-container">
+                  <div class="calculator-symbol">%<span class="divider-line"></span></div>
+                  <input type="text" id="interestRate" v-model="formData.interestRate">
+                </div>
               </div>
 
-
-              <div class="form-group">
-                <label for="income">Loan Tenure:</label><br>
-                <input type="text" id="loanTenure" v-model="formData.loanTenure"><br><br>
+              <div class = "form-row-helper">
+                <label for="income">Loan Tenure:</label>
+                <div class="input-container">
+                  <div class="calculator-symbol">Yrs<span class="divider-line"></span></div>
+                  <input type="text" id="loanTenure" v-model="formData.loanTenure">
+                </div>
               </div>
+
             </div>
-        
-            <h5>Qualify for any schemes? <a href="your-link-url" style="text-decoration: underline;">Click here to find out more!</a></h5>
-
-            <button @click="calculateMortgage">Calculate</button>
           </form>
+
+          <br><h4>Qualify for any schemes? <a href="your-link-url" style="text-decoration: underline;">Click here to find out more!</a></h4><br>
+          <button @click="calculateMortgage">Calculate!</button>
 
         </div>
         <button class="close-button" @click="closeModal">&#10005;</button>
       </div>
 
       <div class = "search-output">
+        <h4 v-if="sentenceVisible">Some properties for you: </h4>
+        
+        <div v-if="houses && houses.length">
+          <div v-for="(house, index) in houses" :key="index" class="house-item">
+            <img :src="house.imageUrl" alt="House image" class="house-image"/>
+            <div class="house-details">
+              <p class="house-title">{{ house.title }}</p>
+              <p class="house-location">{{ house.location }}</p>
+              <p class="house-size">{{ house.size }}</p>
+              <p class="house-price">From ${{ house.price }}</p>
+            </div>
+            <a href={{ house.link }} class="house-link">
+              <span class="arrow-button">></span>
+            </a>
+          </div>
+        </div>
 
       </div>
 
@@ -168,6 +199,11 @@
 </template>
 
 <script>
+
+
+import { db } from '../../scripts/firebase.js';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+
 export default {
   name: "Recommendations",
   data() {
@@ -178,10 +214,12 @@ export default {
         income: ''
       },
       isModalOpen: false,
-      location: null,
-      income: null,
-      size: null,
-
+      location: '',
+      income: '',
+      maxprice: 1000000000,
+      minprice: 0,
+      size: '',
+      sentenceVisible: false,
       /* General information for the financial calculator */
       propertyPrice: 0, // Added for property price input
       loan: 0,           // Added for tax input
@@ -191,6 +229,10 @@ export default {
       totalDownpayment: 0, // Initialize to 0
       downpaymentPercentage: 0, // Initialize to 0
       loanPercentage: 0, // Initialize to 0
+      /* Information for the webscraping Search data portion */
+      searchData: null,
+      houses: [],
+      
     };
   },
   methods: {
@@ -201,8 +243,36 @@ export default {
       this.isModalOpen = false;
     },
     search() {
-      // Implement your search functionality here
-      // This will use propertyPrice, tax, and annualIncome for the search
+      this.sentenceVisible = true;
+
+      const housesCol = collection(db, 'houseSearch');
+
+      let q = query(housesCol);
+
+      // Dynamically add conditions to the query based on input values
+      if (this.size !== 'Any') {
+        q = query(q, where('size', '==', this.size));
+      }
+      if (this.location !== 'Any') {
+        q = query(q, where('location', '==', this.location));
+      }
+      if (!isNaN(parseFloat(this.maxprice))) { // Ensure maxprice is a valid number
+        q = query(q, where('price', '<=', parseFloat(this.maxprice)));
+      }
+      if (!isNaN(parseFloat(this.minprice))) { // Ensure minprice is a valid number
+        q = query(q, where('price', '>=', parseFloat(this.minprice)));
+      }
+
+      getDocs(q)
+        .then(querySnapshot => {
+          const houses = querySnapshot.docs.map(doc => doc.data());
+          this.houses = houses;
+        })
+        .catch(error => {
+          console.error('Error fetching documents:', error);
+          this.sentenceVisible = false;
+        });
+
     },
     calculateMortgage() {
       this.calculateLoanAmount();
@@ -246,15 +316,16 @@ export default {
   margin-bottom: 60px; /* Adjust as necessary */
 }
 
-.search-filter-area select, .search-filter-area button, .financial-calculator-button button, #Modal-Form button {
+.search-filter-area select, .search-filter-area button, .financial-calculator-button button, #modal-right button {
   margin-right: 10px; /* Space between the dropdowns and button */
-  width: 190px;
+  width: 210px;
   padding: 10px 20px; /* Same padding as the links for visual consistency */
   border-radius: 25px;
   border: 1px solid #ccc;
+  background-color: #fefefe;
 }
 
-.search-filter-area button, #Modal-Form button {
+.search-filter-area button, #modal-right button {
   cursor: pointer; /* Change the cursor to indicate the button is clickable */
   margin-left: 40px;
   background-color: #E69B9B;
@@ -272,6 +343,10 @@ export default {
   background-color: #E69B9B;
   border-color: #E69B9B;
   color: #fff;
+}
+
+.search-output {
+  margin-top: 50px;
 }
 .modal {
   box-sizing: border-box; /* Include padding and borders in the element's total width and height */
@@ -293,9 +368,10 @@ export default {
 }
 
 #modal-right {
-  flex-basis: 40%; /* Take up half the space of the modal */
-  padding: 20px; /* Padding inside the children */
+  flex-basis: 60%; /* Adjust to your modal's specific width */
+  padding: 20px;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
 }
@@ -348,10 +424,6 @@ export default {
   display: flex;
 }
 
-.form-group { 
-  padding: 10px;
-}
-
 input[type="text"] {
   border: 1px solid black; /* This sets the border color to black */
 }
@@ -359,7 +431,7 @@ input[type="text"] {
 .close-button {
   position: absolute; /* Position the button absolutely within its positioned parent */
   top: 10px; /* Space from the top of the container */
-  right: 10px; /* Space from the right of the container */
+  right: 20px; /* Space from the right of the container */
   background: none; /* Remove default button background */
   border: none; /* Remove default button border */
   font-size: 24px; /* Adjust the size as needed */
@@ -419,6 +491,100 @@ input[type="text"] {
   height: 15px; /* Circle size */
   border-radius: 50%; /* Make it round */
   margin-right: 5px; /* Space between circle and label */
+}
+.house-item {
+  display: flex;
+  align-items: center; /* Center items vertically */
+  background-color: #f0f0f0;
+  padding: 10px;
+  padding-left: 30px;
+  padding-right: 30px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: relative; /* For absolute positioning of the arrow */
+}
+.house-image {
+  width: auto; /* Adjust based on your image */
+  height: 80px; /* Adjust height as needed */
+  margin-right: 10px; /* Space between image and details */
+}
+
+.house-details {
+  margin-left: 20px;
+  flex-grow: 1; /* Allows text container to fill up remaining space */
+}
+
+.house-title,
+.house-size,
+.house-location,
+.house-price {
+  margin: 5px 0; /* Reduced space between paragraphs */
+  color: #333; /* Darker text for contrast */
+  font-size: 1.2em; /* Larger text size */
+}
+
+.arrow-button {
+  font-size: 1.5em; /* Large size for the arrow button */
+  color: #333; /* Arrow button color */
+  padding: 5px;
+  transition: color 0.3s; /* Smooth transition for hover effect */
+}
+
+.house-link {
+  text-decoration: none; /* Removes underline from the link */
+  margin-left: auto; /* Pushes link to the right */
+  display: flex;
+  align-items: center; /* Center the arrow vertically */
+}
+
+.house-link:hover .arrow-button {
+  color: #666; /* Darkens the arrow on hover for a button-like effect */
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  border: 2px solid #000; /* Adjust border color as needed */
+  padding: 5px 15px;
+  border-radius: 25px; /* Adjust for desired border radius */
+  box-shadow: inset 0 0 5px rgba(0,0,0,0.2); /* subtle inner shadow */
+  position: relative; /* Needed for absolute positioning of children */
+  margin-right: 15px;
+}
+
+.calculator-symbol {
+  position: relative; /* For positioning the line */
+  margin-right: 5px; /* Space between symbol and input */
+  padding-right: 10px; /* Space for the line */
+}
+
+/* Vertical line */
+.divider-line {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 24px; /* Adjust height as needed */
+  border-right: 1px solid #000; /* Right border is the line */
+}
+
+.input-container input {
+  border: none;
+  outline: none;
+  flex: 1; /* Fill the rest of the container */
+  font-size: 1em;
+}
+
+.form-row-helper{
+  margin-bottom: 10px; /* Adjust this value as needed */
+}
+
+/* Remove spinner for number inputs */
+.input-container input[type=number]::-webkit-inner-spin-button,
+.input-container input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 
