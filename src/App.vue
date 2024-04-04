@@ -142,8 +142,8 @@
       tasks() {
         // If you want to separate out a computed property for tasks
         return this.allTasks;
-      },
-    },
+      }
+    }
   };
   </script>
   
