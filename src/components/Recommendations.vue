@@ -8,19 +8,36 @@
           <option selected disabled value="">Location</option>
           <option value="Bedok">Bedok</option>
           <option value="Woodlands">Woodlands</option>
-          <option value="Toa-payoh">Toa Payoh</option>
+          <option value="Tanglin">Tanglin</option>
+          <option value="Hougang">Hougang</option>
+          <option value="Punggol">Punggol</option>
           <option value="Any">Any</option>
         </select>
 
 
-        <select id="Income-dropdown" v-model="income">
-          <option selected disabled value="">Income</option>
-          <option value="0-5k">0-5k</option>
-          <option value="5k-10k">5k-10k</option>
-          <option value="10k-12k">10k-12k</option>
-          <option value="12k-14k">12k-14k</option>
-          <option value="5k">5000</option>
-          <option disabled value="">>14K [Please check your eligibility based on income ceiling]</option>
+        <select id="minprice-dropdown" v-model="minprice">
+          <option selected disabled value="">Minimum Price</option>
+          <option value="100000">100000</option>
+          <option value="200000">200000</option>
+          <option value="300000">300000</option>
+          <option value="400000">400000</option>
+          <option value="500000">500000</option>
+          <option value="600000">600000</option>
+          <option value="700000">700000</option>
+          <option value="800000">800000</option>
+          <option value="Any">Any</option>
+        </select>
+
+        <select id="maxprice-dropdown" v-model="maxprice">
+          <option selected disabled value="">Maximum Price</option>
+          <option value="100000">100000</option>
+          <option value="200000">200000</option>
+          <option value="300000">300000</option>
+          <option value="400000">400000</option>
+          <option value="500000">500000</option>
+          <option value="600000">600000</option>
+          <option value="700000">700000</option>
+          <option value="800000">800000</option>
           <option value="Any">Any</option>
         </select>
 
@@ -179,12 +196,13 @@
             <img :src="house.imageLink" alt="House image" class="house-image"/>
             <div class="house-details">
               <!-- Interpolation inside <p> tags is correct -->
+              <p class="house-id">{{ house.id }}</p>
               <p class="house-location">{{ house.location }}</p>
               <p class="house-size">{{ house.size }}</p>
               <p class="house-price">From ${{ house.lowerPrice }}</p>
             </div>
             <!-- Use v-bind for dynamic attributes -->
-            <a :href="house.webLink" class="house-link">
+            <a :href="house.webLink" target="_blank" class="house-link">
               <span class="arrow-button">></span>
             </a>
           </div>
@@ -212,11 +230,10 @@ export default {
         income: ''
       },
       isModalOpen: false,
-      location: 'Any',
-      income: 'Any',
-      maxprice: 1000000000,
-      minprice: 0,
-      size: 'Any',
+      location: '',
+      maxprice: '',
+      minprice: '',
+      size: '',
       sentenceVisible: false,
       /* General information for the financial calculator */
       propertyPrice: 0, // Added for property price input
@@ -246,24 +263,28 @@ export default {
       let q = query(housesCol);
 
       // Dynamically add conditions to the query based on input values
-      if (this.size !== 'Any') {
+      if (this.size !== 'Any' && this.size !== '') {
         q = query(q, where('size', '==', this.size));
       }
-      if (this.location !== 'Any') {
+      if (this.location !== 'Any' && this.location !== '') {
         q = query(q, where('location', '==', this.location));
       }
-      /* if (!isNaN(parseFloat(this.maxprice))) { // Ensure maxprice is a valid number
+      if (this.maxprice !== '') { // Ensure maxprice is a valid number
         q = query(q, where('upperPrice', '<=', parseFloat(this.maxprice)));
       }
-      if (!isNaN(parseFloat(this.minprice))) { // Ensure minprice is a valid number
+      if (this.minprice !== '') { // Ensure minprice is a valid number
         q = query(q, where('lowerPrice', '>=', parseFloat(this.minprice)));
-      }  */
+      } 
 
       getDocs(q)
       .then(querySnapshot => {
-        const houses = querySnapshot.docs.map(doc => doc.data());
+        const houses = querySnapshot.docs.map(doc => {
+          let houseData = doc.data();
+          // Assign the document ID directly without any prefix
+          houseData.id = doc.id.slice(0, -1); // Assuming you still want to remove the last character
+          return houseData;
+        });
         this.houses = houses;
-        console.log('Houses length:', this.houses.length); // Log inside the .then() block
       })
       .catch(error => {
         console.error('Error fetching documents:', error);
@@ -483,27 +504,26 @@ input[type="text"] {
   border-radius: 50%; /* Make it round */
   margin-right: 5px; /* Space between circle and label */
 }
+.house-image {
+  width: 100px; /* Fixed width for the image */
+  height: auto; /* Maintain aspect ratio */
+}
+
+.house-details {
+  margin-left: 20px; /* Consistent space after the image */
+  flex-grow: 1; /* Allows text container to fill up remaining space */
+}
+
 .house-item {
   display: flex;
   align-items: center; /* Center items vertically */
   background-color: #f0f0f0;
   padding: 10px;
-  padding-left: 30px;
+  padding-left: 30px; /* You may want to adjust this if it's too much with the image width */
   padding-right: 30px;
   margin-bottom: 10px;
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  position: relative; /* For absolute positioning of the arrow */
-}
-.house-image {
-  width: auto; /* Adjust based on your image */
-  height: 80px; /* Adjust height as needed */
-  margin-right: 10px; /* Space between image and details */
-}
-
-.house-details {
-  margin-left: 20px;
-  flex-grow: 1; /* Allows text container to fill up remaining space */
 }
 
 .house-title,
@@ -513,6 +533,13 @@ input[type="text"] {
   margin: 5px 0; /* Reduced space between paragraphs */
   color: #333; /* Darker text for contrast */
   font-size: 1.2em; /* Larger text size */
+}
+
+
+.house-id {
+  margin: 5px 0; /* Reduced space between paragraphs */
+  color: #333; /* Darker text for contrast */
+  font-size: 1.4em; /* Larger text size */
 }
 
 .arrow-button {
