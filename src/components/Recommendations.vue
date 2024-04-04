@@ -55,6 +55,18 @@
         <button @click="search">Search</button>
       </div>
 
+      <button id = "disclaimerbutton" @click="openDisclaimer">Disclaimer</button>
+
+      <div class="disclaimerModal" v-if="isDisclaimerModalOpen">
+        <strong style="display: block; margin-right: 20px; margin-bottom: 20px;">Disclaimer:</strong>
+        <p style="text-align: justify;">The data and information provided by our web search service regarding Built-To-Order (BTO) housing are based on the most recent updates as of February 2024. 
+          Any data or information predating this period shall not be considered relevant for BTO applications and will instead pertain to Sales of Balance Flats, 
+          which are subject to distinct legal and procedural considerations. We strongly advise potential applicants to verify their eligibility for BTO applications by reviewing their personal 
+          circumstances, such as income levels, and by consulting the additional resources and links available on our website. It is the responsibility of the user to ensure that they meet all 
+          criteria and understand the conditions that apply to their application for housing before proceeding. </p>
+        <button class="close-button" @click="isDisclaimerModalOpen = false">&#10005;</button>
+      </div>
+
       <div class="financial-calculator-button">
         <h4>Click here for a step-by-step financial breakdown!</h4>
         <button @click="openModal">Financial calculator</button>
@@ -216,20 +228,20 @@
 
 <script>
 
-
 import { db } from '../../scripts/firebase.js';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 
 export default {
   name: "Recommendations",
   data() {
-    return {
+    return {/* 
         formData: {
         propertyPrice: '',
         tax: '',
         income: ''
-      },
+      }, */
       isModalOpen: false,
+      isDisclaimerModalOpen: false,
       location: '',
       maxprice: '',
       minprice: '',
@@ -253,6 +265,9 @@ export default {
     };
   },
   methods: {
+    openDisclaimer() {
+      this.isDisclaimerModalOpen = true; // This method opens the modal
+    },
     openModal() {
       this.isModalOpen = true; // This method opens the modal
     },
@@ -260,6 +275,11 @@ export default {
       this.isModalOpen = false;
     },
     search() {
+      if (!isNaN(this.minprice) && !isNaN(this.maxprice) && this.maxprice !== '') {
+        if (this.minprice > this.maxprice) {
+          alert('Error: The minimum price cannot be more than the maximum price.');
+        }
+      }
       this.sentenceVisible = true;
       const housesCol = collection(db, 'houseSearch');
       let q = query(housesCol);
@@ -313,7 +333,7 @@ export default {
       return (this.upfrontCostsPercentage / 100) * this.totalCost;
     },
   }
-};
+}
 
 </script>
 
@@ -332,7 +352,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: flex-start; /* or 'center' if you want the items centered */
-  margin-bottom: 60px; /* Adjust as necessary */
+  margin-bottom: 20px; /* Adjust as necessary */
 }
 
 .search-filter-area select, .search-filter-area button, .financial-calculator-button button, #modal-right button {
@@ -348,6 +368,15 @@ export default {
   cursor: pointer; /* Change the cursor to indicate the button is clickable */
   margin-left: 40px;
   background-color: #E69B9B;
+  color: white;
+}
+
+#disclaimerbutton {
+  width: 150px;
+  padding: 10px 20px; /* Same padding as the links for visual consistency */
+  border-radius: 25px;
+  border: 1px solid #ccc;
+  background-color: black;
   color: white;
 }
 
@@ -367,6 +396,28 @@ export default {
 .search-output {
   margin-top: 50px;
 }
+
+.disclaimerModal {
+  box-sizing: border-box; /* Include padding and borders in the element's total width and height */
+  display: flex;
+  justify-content: space-between;
+  padding: 40px;
+  padding-right: 80px;
+  align-items: stretch;
+  background-color: #fefefe;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  width: 70vw; /* 80% of the viewport width */
+  height: 30vh; /* 70% of the viewport height for a fixed size */
+  margin: auto;
+  overflow: hidden;
+  position: fixed; /* To ensure it's placed relative to the viewport */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -85%); /* Center the modal */
+  z-index: 1000; /* Ensure it's above other content */
+}
+
 .modal {
   box-sizing: border-box; /* Include padding and borders in the element's total width and height */
   display: flex;
