@@ -68,7 +68,7 @@
             <div id = "mortgage-breakdown">
               <h4> Mortgage Breakdown</h4>
               <h6> Est Monthly Repayment </h6>
-              <span id = "Total-Downpayment" v-if="totalDownpayment > 0">S$ {{ totalDownpayment }} / mo</span>
+              <span id = "est-mortgage" v-if="totalDownpayment > 0">S$ {{ totalDownpayment }} / mo</span>
                 
               <!-- Progress bar for Downpayment with two colors -->
               <div class="progress-bar-wrapper">
@@ -94,11 +94,11 @@
               <div class="progress-bar-legend">
                 <div class="legend-item">
                   <div class="legend-color downpayment"></div>
-                  <span>Downpayment</span>
+                  <span>${{ this.FCPrincipal }} principal</span>
                 </div>
                 <div class="legend-item">
                   <div class="legend-color loan-amount"></div>
-                  <span>Loan amount</span>
+                  <span>${{ this.FCinterest }} interest</span>
                 </div>
               </div>
             </div>
@@ -107,7 +107,7 @@
 
               <h4> Upfront Costs</h4>
               <h6> Total Downpayment </h6>
-              <span id = "Total-Downpayment" v-if="totalDownpayment > 0">S$ {{ totalDownpayment }}</span>
+              <span id = "Total-Downpayment" v-if="totalDownpayment > 0">S$ {{ totalDownpayment }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
                 
               <!-- Progress bar for Downpayment with two colors -->
               <div class="progress-bar-wrapper">
@@ -236,6 +236,8 @@ export default {
       size: '',
       sentenceVisible: false,
       /* General information for the financial calculator */
+      FCPrincipal:0,
+      FCinterest:0,
       propertyPrice: 0, // Added for property price input
       loan: 0,           // Added for tax input
       interestRate: 0,   // Added for income input
@@ -299,7 +301,7 @@ export default {
       const propertyPrice = parseFloat(this.formData.propertyPrice);
       const loan = parseFloat(this.formData.loan);
       // MUST CHANGE THIS IS A PLACEHOLDER
-      this.totalDownpayment = parseFloat(this.formData.loan);
+      this.totalDownpayment = propertyPrice - loan;
       
       // Ensure the values are valid numbers
       if (!isNaN(propertyPrice) && !isNaN(loan) && propertyPrice > 0) {
@@ -450,10 +452,6 @@ input[type="text"] {
   cursor: pointer; /* Change cursor to pointer when hovering over the button */
 }
 
-#Total-Downpayment {
-  margin-left: auto;
-}
-
 .progress-bar-wrapper {
   margin: 10px 0;
 }
@@ -595,12 +593,14 @@ input[type="text"] {
   font-size: 1em;
 }
 
-/* Remove spinner for number inputs 
-.input-container input[type=number]::-webkit-inner-spin-button,
-.input-container input[type=number]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+#Total-Downpayment {
+  display: block; /* Makes the span a block-level element */
+  text-align: right; /* Aligns text to the right */
 }
-*/
+
+#est-mortgage {
+  display: block; /* Makes the span a block-level element */
+  text-align: right; /* Aligns text to the right */
+}
 
 </style>
