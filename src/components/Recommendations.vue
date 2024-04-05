@@ -79,8 +79,8 @@
 
             <div id = "mortgage-breakdown">
               <h4> Mortgage Breakdown</h4>
-              <h6> Est Monthly Repayment </h6>
-              <span id = "est-mortgage" v-if="totalDownpayment > 0">S$ {{ totalDownpayment }} / mo</span>
+              <p> Est Monthly Repayment </p>
+              <span id = "est-mortgage" v-if="totalMortgage > 0"><strong>S$ {{ totalMortgage }} / mo</strong></span>
                 
               <!-- Progress bar for Downpayment with two colors -->
               <div class="progress-bar-wrapper">
@@ -88,16 +88,16 @@
                   <!-- Bar for downpaymentPercentage -->
                   <div 
                     class="progress-bar-part downpayment" 
-                    :style="{ width: downpaymentPercentage + '%' }"
+                    :style="{ width: mortgagePrincipalPercent + '%' }"
                   >
-                    <span v-if="downpaymentPercentage > 0">{{ downpaymentPercentage }}%</span>
+                    <span v-if="mortgagePrincipalPercent > 0">{{ mortgagePrincipalPercent }}%</span>
                   </div>
                   <!-- Bar for loanPercentage -->
                   <div 
                     class="progress-bar-part loan-amount" 
-                    :style="{ width: loanPercentage + '%' }"
+                    :style="{ width: mortgageInterestPercent + '%' }"
                   >
-                    <span v-if="loanPercentage > 0">{{ loanPercentage }}%</span>
+                    <span v-if="mortgageInterestPercent > 0">{{ mortgageInterestPercent }}%</span>
                   </div>
                 </div>
               </div>
@@ -106,11 +106,11 @@
               <div class="progress-bar-legend">
                 <div class="legend-item">
                   <div class="legend-color downpayment"></div>
-                  <span>${{ this.FCPrincipal }} principal</span>
+                  <span>${{ this.mortgagePrincipal }} principal</span>
                 </div>
                 <div class="legend-item">
                   <div class="legend-color loan-amount"></div>
-                  <span>${{ this.FCinterest }} interest</span>
+                  <span>${{ this.mortgageInterest }} interest</span>
                 </div>
               </div>
             </div>
@@ -118,8 +118,8 @@
             <div id = "upfront-costs">
 
               <h4> Upfront Costs</h4>
-              <h6> Total Downpayment </h6>
-              <span id = "Total-Downpayment" v-if="totalDownpayment > 0">S$ {{ totalDownpayment }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+              <p> Total Downpayment </p>
+              <span id = "Total-Downpayment" v-if="totalDownpayment > 0"><strong>S$ {{ totalDownpayment }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</strong></span>
                 
               <!-- Progress bar for Downpayment with two colors -->
               <div class="progress-bar-wrapper">
@@ -193,8 +193,8 @@
             </div>
           </form>
 
-          <br><h4>Qualify for any schemes? <a href="your-link-url" style="text-decoration: underline;">Click here to find out more!</a></h4><br>
-          <button @click="calculateMortgage">Calculate!</button>
+          <br><h4>Qualify for any schemes? <a href="/check-eligibility" target="_blank" style="text-decoration: underline; color: #E69B9B;">Click here to find out more!</a></h4><br>
+          <button @click="calculateMethod">Calculate!</button>
 
         </div>
         <button class="close-button" @click="closeModal">&#10005;</button>
@@ -237,8 +237,9 @@ export default {
     return {
         formData: {
         propertyPrice: '',
-        tax: '',
-        income: ''
+        loan: '',
+        loanTenure: '',
+        interestRate: '',
       },
       isModalOpen: false,
       isDisclaimerModalOpen: false,
@@ -247,13 +248,17 @@ export default {
       minprice: '',
       size: '',
       sentenceVisible: false,
-      /* General information for the financial calculator */
-      FCPrincipal:0,
-      FCinterest:0,
+      /* // General information for the financial calculator
       propertyPrice: 0, // Added for property price input
       loan: 0,           // Added for tax input
       interestRate: 0,   // Added for income input
-      loanTenure: 0,   // Added for income input
+      loanTenure: 0,   // Added for income input  */
+      /* Information for the "mortgage breakdown" portion */
+      mortgagePrincipalPercent:0,
+      mortgagePrincipal: 0,
+      mortgageInterestPercent:0,
+      mortgageInterest: 0,
+      totalMortgage:0,
       /* Information for the "upfront costs" portion */
       totalDownpayment: 0, // Initialize to 0
       downpaymentPercentage: 0, // Initialize to 0
@@ -278,8 +283,9 @@ export default {
       if (!isNaN(this.minprice) && !isNaN(this.maxprice) && this.maxprice !== '') {
         if (this.minprice > this.maxprice) {
           alert('Error: The minimum price cannot be more than the maximum price.');
-        }
+        } 
       }
+
       this.sentenceVisible = true;
       const housesCol = collection(db, 'houseSearch');
       let q = query(housesCol);
@@ -313,15 +319,20 @@ export default {
         this.sentenceVisible = false;
       });
     },
-    calculateMortgage() {
+    calculateMethod() {
       this.calculateLoanAmount();
+      this.calculateMortgage();
     },
     calculateLoanAmount() {
+
+      console.log("in calculator")
       // Placeholder for actual logic
       const propertyPrice = parseFloat(this.formData.propertyPrice);
       const loan = parseFloat(this.formData.loan);
       // MUST CHANGE THIS IS A PLACEHOLDER
       this.totalDownpayment = propertyPrice - loan;
+
+      console.log(this.totalDownpayment)
       
       // Ensure the values are valid numbers
       if (!isNaN(propertyPrice) && !isNaN(loan) && propertyPrice > 0) {
@@ -333,9 +344,26 @@ export default {
         }
       }
     },
+    calculateMortgage() {
+      const loan = parseFloat(this.formData.loan);
+      const duration = parseFloat(this.formData.loanTenure);
+      const rate = parseFloat(this.formData.interestRate);
+
+      if (!isNaN(loan) && !isNaN(duration) && !isNaN(rate)) {
+        const helper = loan * ((1 + (rate/100))**duration);
+        this.totalMortgage = (helper/(duration * 12)).toFixed(2);
+        this.mortgagePrincipal = (loan/(duration * 12)).toFixed(2);
+        this.mortgagePrincipalPercent = parseFloat((this.mortgagePrincipal / this.totalMortgage) * 100).toFixed(1);
+        // completed by induction
+        this.mortgageInterest = (this.totalMortgage - this.mortgagePrincipal).toFixed(2);
+        this.mortgageInterestPercent = parseFloat((this.mortgageInterest / this.totalMortgage) * 100).toFixed(1);
+      } else {
+        alert('Error: The mortgage portion of the calculator will not work unless you input a valid number for the loan, duration and/or rate field.');
+      }
+    },
     calculateDownpayment() {
       return (this.upfrontCostsPercentage / 100) * this.totalCost;
-    },
+    }
   }
 }
 
