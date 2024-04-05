@@ -234,12 +234,12 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 export default {
   name: "Recommendations",
   data() {
-    return {/* 
+    return {
         formData: {
         propertyPrice: '',
         tax: '',
         income: ''
-      }, */
+      },
       isModalOpen: false,
       isDisclaimerModalOpen: false,
       location: '',
@@ -325,8 +325,12 @@ export default {
       
       // Ensure the values are valid numbers
       if (!isNaN(propertyPrice) && !isNaN(loan) && propertyPrice > 0) {
-        this.downpaymentPercentage = parseFloat(((propertyPrice - loan) / propertyPrice) * 100).toFixed(1);
-        this.loanPercentage = parseFloat((loan / propertyPrice) * 100).toFixed(1);
+        if (propertyPrice < loan) {
+          alert('Error: It is not prudent to borrow more money than you need.');
+        } else {
+          this.downpaymentPercentage = parseFloat(((propertyPrice - loan) / propertyPrice) * 100).toFixed(1);
+          this.loanPercentage = parseFloat((loan / propertyPrice) * 100).toFixed(1);
+        }
       }
     },
     calculateDownpayment() {
