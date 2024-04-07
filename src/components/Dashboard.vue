@@ -54,7 +54,7 @@ export default {
       this.$emit('task-updated', this.tasks[taskIndex]);
     },
     goToWebsite() {
-      window.open('https://homes.hdb.gov.sg/home/landing', '_blank');
+      window.open('https://www.hdb.gov.sg/about-us/news-and-publications/press-releases', '_blank');
     },
     getRouteName(taskId) {
       const taskRouteMap = {
