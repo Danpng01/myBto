@@ -132,7 +132,7 @@ export default {
 
         } catch (error) {
           console.error('Error updating password:', error);
-          alert('Failed to update password. Please try again.');
+          alert(error.message);
         }
       }
     },

@@ -92,6 +92,13 @@ export async function register(email, password) {
     } catch (error) {
         console.error("Error creating user:", error.message);
         // Here, you might want to show an alert for different types of errors
+        // Check for the "email already in use" error and alert the user
+        if (error.code === 'auth/email-already-in-use') {
+            alert("The email address is already in use by another account.");
+        } else {
+            // Handle other types of errors (optional)
+            alert("An error occurred during registration.");
+        }
         throw(error);
     }
 }
