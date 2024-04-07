@@ -1,5 +1,5 @@
 <template>
-    <main class="content">
+    <div class="content">
 
       <h4>Not sure what you can get? We got you.</h4>
       <div class="search-filter-area">
@@ -59,7 +59,7 @@
 
       <div class="disclaimerModal" v-if="isDisclaimerModalOpen">
         <strong style="display: block; margin-right: 20px; margin-bottom: 20px;">Disclaimer:</strong>
-        <p style="text-align: justify;">The data and information provided by our web search service regarding Built-To-Order (BTO) housing are based on the most recent updates as of February 2024. 
+        <p style="text-align: justify;">The data and information provided by our web search service regarding Built-To-Order (BTO) housing are based on the most recent updates as of April 2024. 
           Any data or information predating this period shall not be considered relevant for BTO applications and will instead pertain to Sales of Balance Flats, 
           which are subject to distinct legal and procedural considerations. We strongly advise potential applicants to verify their eligibility for BTO applications by reviewing their personal 
           circumstances, such as income levels, and by consulting the additional resources and links available on our website. It is the responsibility of the user to ensure that they meet all 
@@ -222,7 +222,7 @@
 
       </div>
 
-    </main>
+    </div>
 
 </template>
 
@@ -363,7 +363,17 @@ export default {
     },
     calculateDownpayment() {
       return (this.upfrontCostsPercentage / 100) * this.totalCost;
+    },
+    checkWindowWidth() {
+      console.log(window.innerWidth)
+      if (window.innerWidth < 1300) {
+        alert(`Please increase the width of the window for optimal viewing experience. Current width: ${window.innerWidth}px. Optimal width: 1300px.`);
+      }
     }
+  },
+  mounted() {
+    this.checkWindowWidth(); // Perform an initial check
+    setInterval(this.checkWindowWidth, 20); // Check every 2 seconds
   }
 }
 
@@ -374,7 +384,9 @@ export default {
 .content {
   margin-top: 25px;
   margin-left: 40px;
+  min-width: 300px;
 }
+
 .content h4 {
   /* Style for the descriptive text above the dropdowns */
   margin: 20px 0;
@@ -450,6 +462,27 @@ export default {
   z-index: 1000; /* Ensure it's above other content */
 }
 
+.sizeModal {
+  box-sizing: border-box; /* Include padding and borders in the element's total width and height */
+  display: flex;
+  justify-content: space-between;
+  padding: 40px;
+  padding-right: 80px;
+  align-items: stretch;
+  background-color: #fefefe;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  width: 70vw; /* 80% of the viewport width */
+  height: 30vh; /* 70% of the viewport height for a fixed size */
+  margin: auto;
+  overflow: hidden;
+  position: fixed; /* To ensure it's placed relative to the viewport */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -85%); /* Center the modal */
+  z-index: 1000; /* Ensure it's above other content */
+}
+
 .modal {
   box-sizing: border-box; /* Include padding and borders in the element's total width and height */
   display: flex;
@@ -477,6 +510,7 @@ export default {
   align-items: center; /* Center children horizontally */
   padding: 20px; /* Padding inside the modal */
   margin: auto; /* Center the modal in the available space */
+  width: 40vw;
 }
 
 #Modal-Form {
