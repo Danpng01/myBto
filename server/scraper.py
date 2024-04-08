@@ -1,3 +1,4 @@
+import platform
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -24,8 +25,14 @@ chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
 chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36")
 chrome_options.add_argument("--disable-web-security")
 
-# Path to where you've saved your ChromeDriver
-webdriver_path = '../chromedriver.exe'
+# Determine the operating system
+current_os = platform.system()
+
+# Set the WebDriver path based on the operating system
+if current_os == 'Windows':
+    webdriver_path = '../chromedriver.exe'
+elif current_os == 'Darwin':  # Mac OS
+    webdriver_path = '../chromedriver'
 
 # Setting up Chrome WebDriver
 service = Service(webdriver_path)
