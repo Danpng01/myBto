@@ -19,8 +19,8 @@ url = 'https://www.hdb.gov.sg/about-us/news-and-publications/press-releases'
 # Use the driver to fetch the webpage
 driver.get(url)
 
-# Optional: wait for a few seconds to make sure the page is fully loaded
-time.sleep(5)
+# # Optional: wait for a few seconds to make sure the page is fully loaded
+# time.sleep(5)
 
 # Now, use Selenium to find all elements with the class 'list-item'
 entries = driver.find_elements(By.CLASS_NAME, 'list-item')

@@ -6,7 +6,7 @@
           <v-icon>mdi-bell-outline</v-icon>
       </v-btn>
       <div v-if="showNotifications" class="notifications-container">
-        <p>Notifications should show up below:</p>
+        <h2 class="notification-title">Recent Press Release notes:</h2>
         <div v-for="notification in notifications" :key="notification.id" class="notification-item">
           {{ notification.title }}
         </div>
@@ -45,9 +45,11 @@
 import { VCheckbox, VBadge, VBtn, VIcon } from 'vuetify/components'
 
 export default {
+  // eslint-disable-next-line vue/multi-word-component-names
   name: 'Dashboard',
   components: {
     VCheckbox,
+    // eslint-disable-next-line vue/no-unused-components
     VBadge,
     VBtn,
     VIcon
@@ -89,37 +91,71 @@ export default {
         this.fetchNotifications();
       }
     },
-    fetchNotifications() {
-      // Replace with your actual API call
-      this.notifications = [
-        { id: 1, title: 'Notification 1' },
-        { id: 2, title: 'Notification 2' },
-        // ... more notifications
-      ];
-      console.log('Notifications fetched:', this.notifications);
-    }
+    async fetchNotifications() {
+      try {
+        const response = await fetch('/api/notifications');
+        if (!response.ok) throw new Error('Network response was not ok');
+        this.notifications = await response.json();
+        console.log('Notifications fetched:', this.notifications);
+      } catch (error) {
+        console.error('Failed to fetch notifications:', error);
+      }
+    },
   }
 };
 </script>
 
 <style scoped>
 
+/* Custom scrollbar styles */
+.notifications-container::-webkit-scrollbar {
+  width: 8px; /* width of the entire scrollbar */
+}
+
+.notifications-container::-webkit-scrollbar-track {
+  background: transparent; /* color of the tracking area */
+}
+
+.notifications-container::-webkit-scrollbar-thumb {
+  background-color: #bfbfbf; /* color of the scroll thumb */
+  border-radius: 20px; /* roundness of the scroll thumb */
+  border: 3px solid transparent; /* creates padding around scroll thumb */
+}
+
+
+.notification-title {
+  font-size: 17px;
+  font-weight: bold;
+}
+
 .notifications-container {
   position: absolute;
-  top: 100%; /* Adjust as needed, might be more depending on your layout */
-  right: 0;
-  background-color: white;
+  padding: 10px;
+  top: 220px; /* Adjust this value to position the container below the bell icon */
+  right: 70px;  /* Align to the right edge of the .header container */
+  background-color: #D9D9D9;
   border: 1px solid #ccc;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   width: 300px; /* Adjust as needed */
-  z-index: 100;
-  display: block; /* Ensure this is set to block or inline-block */
+  z-index: 100; /* Ensure this is below the z-index of the notification button if overlapping occurs */
+  display: block; /* This makes the container visible when showNotifications is true */
+  max-height: 300px; /* Set a fixed maximum height to show only three items at a time */
+  overflow-y: auto; /* Enable vertical scrolling */
 }
 
 .notification-item {
-  padding: 10px;
+  padding: 5px;
   border-bottom: 1px solid #eee;
+  background: #F9F9F9; /* Light gray background */
+  margin-bottom: 10px; /* Spacing between items */
+  border-radius: 8px; /* Rounded corners like in the example */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle box shadow */
+  font-size: 14px;
 }
+
 .dashboard-container {
   display: flex;
   flex-direction: column;
@@ -136,7 +172,7 @@ export default {
 .notification-button {
   position: absolute;
   top: 150px;
-  right: 150px;
+  right: 70px;
   background-color: transparent;
   min-width: 0;
 }

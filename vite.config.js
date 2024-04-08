@@ -16,5 +16,16 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
-  }
+  },
+  server: {
+    proxy: {
+      // Proxy /api/* requests to your Express server
+      '/api': {
+        target: 'http://localhost:3001', // Replace with your Express server's URL and port
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+      },
+    },
+  },
 })
