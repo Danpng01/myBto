@@ -6,9 +6,12 @@
           <v-icon>mdi-bell-outline</v-icon>
       </v-btn>
       <div v-if="showNotifications" class="notifications-container">
-        <h2 class="notification-title">Recent Press Release notes:</h2>
-        <div v-for="notification in notifications" :key="notification.id" class="notification-item">
-          {{ notification.title }}
+        <div v-if="loadingNotifications" class="notification-title">Fetching notes...</div>
+        <div v-else>
+          <h2 class="notification-title">{{ notificationTitle }}</h2>
+          <div v-for="notification in notifications" :key="notification.id" class="notification-item">
+            {{ notification.title }}
+          </div>
         </div>
       </div>
     </div>
@@ -60,7 +63,9 @@ export default {
   data() {
     return {
       showNotifications: false,
-      notifications: []
+      notifications: [],
+      loadingNotifications: false,
+      notificationTitle: "Recent Press Release notes:"
     };
   },
   methods: {
@@ -93,12 +98,15 @@ export default {
     },
     async fetchNotifications() {
       try {
+        this.loadingNotifications = true;
         const response = await fetch('/api/notifications');
         if (!response.ok) throw new Error('Network response was not ok');
         this.notifications = await response.json();
         console.log('Notifications fetched:', this.notifications);
       } catch (error) {
         console.error('Failed to fetch notifications:', error);
+      } finally {
+        this.loadingNotifications = false;
       }
     },
   }

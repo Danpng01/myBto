@@ -1,11 +1,13 @@
 // server.js
+// eslint-disable-next-line no-undef
 const express = require('express');
+// eslint-disable-next-line no-undef
 const { spawn } = require('child_process');
 const app = express();
 const port = 3001;
 
 app.get('/api/notifications', (req, res) => {
-  const pythonProcess = spawn('python', ['notifscraper.py']);
+  const pythonProcess = spawn('python', ['scraper.py']);
 
   let dataString = '';
 
