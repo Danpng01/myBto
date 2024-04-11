@@ -320,34 +320,66 @@ export default {
       });
     },
     calculateMethod() {
-      this.calculateLoanAmount();
-      this.calculateMortgage();
-    },
-    calculateLoanAmount() {
 
-      console.log("in calculator")
-      // Placeholder for actual logic
-      const propertyPrice = parseFloat(this.formData.propertyPrice);
+      // checking for valid property price
+      const rawPropertyPrice = this.formData.propertyPrice;
+      const propertyPrice = parseFloat(rawPropertyPrice);
+      const isStrictlyNumeric = /^\d*\.?\d+$/.test(rawPropertyPrice);
+
+      if (isNaN(propertyPrice) || !isStrictlyNumeric || propertyPrice <= 0) {
+        alert('Error: Please enter a valid property price.');
+        return;
+      }
+
+      if (!isNaN(propertyPrice) && propertyPrice > 1000000) {
+        alert('Error: Please enter a valid property price, the input price is too high. Please check out our website for more accurate guage of BTO prices.');
+        return;
+      }
+
+      // checking for valid non-zero inputs
       const loan = parseFloat(this.formData.loan);
-      // MUST CHANGE THIS IS A PLACEHOLDER
-      this.totalDownpayment = propertyPrice - loan;
+      const duration = parseFloat(this.formData.loanTenure);
+      const rate = parseFloat(this.formData.interestRate);
 
-      console.log(this.totalDownpayment)
-      
-      // Ensure the values are valid numbers
+      if (!isNaN(duration) && duration == 0) {
+        alert('Error: The duration has to be more than a year. Banks do not allow loans of 0 years.');
+        return;
+      } 
+
+      if (!isNaN(duration) && duration >= 100) {
+        alert('Error: The duration has to be less than a hundred years. Banks do not allow personal loans that will exceed the average human lifespan.');
+        return;
+      } 
+
+      if (!isNaN(rate) && rate <= 0) {
+        alert('Error: The rate has to be more than zero percent. Banks do not allow personal loans at such low rates.');
+        return;
+      } 
+
+      if (!isNaN(rate) && rate > 30) {
+        alert('Error: Banks do not allow personal loans of such high margins.');
+        return;
+      } 
+
+      if (isNaN(loan) || isNaN(duration) || isNaN(rate)) {
+        alert('Error: The mortgage portion of the calculator will not work unless you input a valid number for the loan, duration and/or rate field.');
+        return;
+      }
+
+      if (!isNaN(loan) && loan < 100000) {
+        alert('Error: Local banks do not allow for loans less than $100,000. More information available at Redbrick.sg.');
+        return;
+      }
+
       if (!isNaN(propertyPrice) && !isNaN(loan) && propertyPrice > 0) {
         if (propertyPrice < loan) {
           alert('Error: It is not prudent to borrow more money than you need.');
+          return;
         } else {
           this.downpaymentPercentage = parseFloat(((propertyPrice - loan) / propertyPrice) * 100).toFixed(1);
           this.loanPercentage = parseFloat((loan / propertyPrice) * 100).toFixed(1);
         }
       }
-    },
-    calculateMortgage() {
-      const loan = parseFloat(this.formData.loan);
-      const duration = parseFloat(this.formData.loanTenure);
-      const rate = parseFloat(this.formData.interestRate);
 
       if (!isNaN(loan) && !isNaN(duration) && !isNaN(rate)) {
         const helper = loan * ((1 + (rate/100))**duration);
@@ -357,15 +389,12 @@ export default {
         // completed by induction
         this.mortgageInterest = (this.totalMortgage - this.mortgagePrincipal).toFixed(2);
         this.mortgageInterestPercent = parseFloat((this.mortgageInterest / this.totalMortgage) * 100).toFixed(1);
-      } else {
-        alert('Error: The mortgage portion of the calculator will not work unless you input a valid number for the loan, duration and/or rate field.');
       }
     },
     calculateDownpayment() {
       return (this.upfrontCostsPercentage / 100) * this.totalCost;
     },
     checkWindowWidth() {
-      console.log(window.innerWidth)
       if (window.innerWidth < 1300) {
         alert(`Please increase the width of the window for optimal viewing experience. Current width: ${window.innerWidth}px. Optimal width: 1300px.`);
       }
