@@ -1,5 +1,5 @@
 <template>
-    <main class="content">
+    <div class="content">
 
       <h4>Not sure what you can get? We got you.</h4>
       <div class="search-filter-area">
@@ -55,6 +55,18 @@
         <button @click="search">Search</button>
       </div>
 
+      <button id = "disclaimerbutton" @click="openDisclaimer">Disclaimer</button>
+
+      <div class="disclaimerModal" v-if="isDisclaimerModalOpen">
+        <strong style="display: block; margin-right: 20px; margin-bottom: 20px;">Disclaimer:</strong>
+        <p style="text-align: justify;">The data and information provided by our web search service regarding Built-To-Order (BTO) housing are based on the most recent updates as of April 2024. 
+          Any data or information predating this period shall not be considered relevant for BTO applications and will instead pertain to Sales of Balance Flats, 
+          which are subject to distinct legal and procedural considerations. We strongly advise potential applicants to verify their eligibility for BTO applications by reviewing their personal 
+          circumstances, such as income levels, and by consulting the additional resources and links available on our website. It is the responsibility of the user to ensure that they meet all 
+          criteria and understand the conditions that apply to their application for housing before proceeding. </p>
+        <button class="close-button" @click="isDisclaimerModalOpen = false">&#10005;</button>
+      </div>
+
       <div class="financial-calculator-button">
         <h4>Click here for a step-by-step financial breakdown!</h4>
         <button @click="openModal">Financial calculator</button>
@@ -67,8 +79,8 @@
 
             <div id = "mortgage-breakdown">
               <h4> Mortgage Breakdown</h4>
-              <h6> Est Monthly Repayment </h6>
-              <span id = "est-mortgage" v-if="totalDownpayment > 0">S$ {{ totalDownpayment }} / mo</span>
+              <p> Est Monthly Repayment </p>
+              <span id = "est-mortgage" v-if="totalMortgage > 0"><strong>S$ {{ totalMortgage }} / mo</strong></span>
                 
               <!-- Progress bar for Downpayment with two colors -->
               <div class="progress-bar-wrapper">
@@ -76,16 +88,16 @@
                   <!-- Bar for downpaymentPercentage -->
                   <div 
                     class="progress-bar-part downpayment" 
-                    :style="{ width: downpaymentPercentage + '%' }"
+                    :style="{ width: mortgagePrincipalPercent + '%' }"
                   >
-                    <span v-if="downpaymentPercentage > 0">{{ downpaymentPercentage }}%</span>
+                    <span v-if="mortgagePrincipalPercent > 0">{{ mortgagePrincipalPercent }}%</span>
                   </div>
                   <!-- Bar for loanPercentage -->
                   <div 
                     class="progress-bar-part loan-amount" 
-                    :style="{ width: loanPercentage + '%' }"
+                    :style="{ width: mortgageInterestPercent + '%' }"
                   >
-                    <span v-if="loanPercentage > 0">{{ loanPercentage }}%</span>
+                    <span v-if="mortgageInterestPercent > 0">{{ mortgageInterestPercent }}%</span>
                   </div>
                 </div>
               </div>
@@ -94,11 +106,11 @@
               <div class="progress-bar-legend">
                 <div class="legend-item">
                   <div class="legend-color downpayment"></div>
-                  <span>${{ this.FCPrincipal }} principal</span>
+                  <span>${{ this.mortgagePrincipal }} principal</span>
                 </div>
                 <div class="legend-item">
                   <div class="legend-color loan-amount"></div>
-                  <span>${{ this.FCinterest }} interest</span>
+                  <span>${{ this.mortgageInterest }} interest</span>
                 </div>
               </div>
             </div>
@@ -106,8 +118,8 @@
             <div id = "upfront-costs">
 
               <h4> Upfront Costs</h4>
-              <h6> Total Downpayment </h6>
-              <span id = "Total-Downpayment" v-if="totalDownpayment > 0">S$ {{ totalDownpayment }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+              <p> Total Downpayment </p>
+              <span id = "Total-Downpayment" v-if="totalDownpayment > 0"><strong>S$ {{ totalDownpayment }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</strong></span>
                 
               <!-- Progress bar for Downpayment with two colors -->
               <div class="progress-bar-wrapper">
@@ -181,8 +193,8 @@
             </div>
           </form>
 
-          <br><h4>Qualify for any schemes? <a href="your-link-url" style="text-decoration: underline;">Click here to find out more!</a></h4><br>
-          <button @click="calculateMortgage">Calculate!</button>
+          <br><h4>Qualify for any schemes? <a href="/check-eligibility" target="_blank" style="text-decoration: underline; color: #E69B9B;">Click here to find out more!</a></h4><br>
+          <button @click="calculateMethod">Calculate!</button>
 
         </div>
         <button class="close-button" @click="closeModal">&#10005;</button>
@@ -210,12 +222,11 @@
 
       </div>
 
-    </main>
+    </div>
 
 </template>
 
 <script>
-
 
 import { db } from '../../scripts/firebase.js';
 import { collection, query, where, getDocs } from 'firebase/firestore';
@@ -226,22 +237,28 @@ export default {
     return {
         formData: {
         propertyPrice: '',
-        tax: '',
-        income: ''
+        loan: '',
+        loanTenure: '',
+        interestRate: '',
       },
       isModalOpen: false,
+      isDisclaimerModalOpen: false,
       location: '',
       maxprice: '',
       minprice: '',
       size: '',
       sentenceVisible: false,
-      /* General information for the financial calculator */
-      FCPrincipal:0,
-      FCinterest:0,
+      /* // General information for the financial calculator
       propertyPrice: 0, // Added for property price input
       loan: 0,           // Added for tax input
       interestRate: 0,   // Added for income input
-      loanTenure: 0,   // Added for income input
+      loanTenure: 0,   // Added for income input  */
+      /* Information for the "mortgage breakdown" portion */
+      mortgagePrincipalPercent:0,
+      mortgagePrincipal: 0,
+      mortgageInterestPercent:0,
+      mortgageInterest: 0,
+      totalMortgage:0,
       /* Information for the "upfront costs" portion */
       totalDownpayment: 0, // Initialize to 0
       downpaymentPercentage: 0, // Initialize to 0
@@ -253,6 +270,9 @@ export default {
     };
   },
   methods: {
+    openDisclaimer() {
+      this.isDisclaimerModalOpen = true; // This method opens the modal
+    },
     openModal() {
       this.isModalOpen = true; // This method opens the modal
     },
@@ -260,6 +280,12 @@ export default {
       this.isModalOpen = false;
     },
     search() {
+      if (!isNaN(this.minprice) && !isNaN(this.maxprice) && this.maxprice !== '') {
+        if (this.minprice > this.maxprice) {
+          alert('Error: The minimum price cannot be more than the maximum price.');
+        } 
+      }
+
       this.sentenceVisible = true;
       const housesCol = collection(db, 'houseSearch');
       let q = query(housesCol);
@@ -293,27 +319,92 @@ export default {
         this.sentenceVisible = false;
       });
     },
-    calculateMortgage() {
-      this.calculateLoanAmount();
-    },
-    calculateLoanAmount() {
-      // Placeholder for actual logic
-      const propertyPrice = parseFloat(this.formData.propertyPrice);
+    calculateMethod() {
+
+      // checking for valid property price
+      const rawPropertyPrice = this.formData.propertyPrice;
+      const propertyPrice = parseFloat(rawPropertyPrice);
+      const isStrictlyNumeric = /^\d*\.?\d+$/.test(rawPropertyPrice);
+
+      if (isNaN(propertyPrice) || !isStrictlyNumeric || propertyPrice <= 0) {
+        alert('Error: Please enter a valid property price.');
+        return;
+      }
+
+      if (!isNaN(propertyPrice) && propertyPrice > 1000000) {
+        alert('Error: Please enter a valid property price, the input price is too high. Please check out our website for more accurate guage of BTO prices.');
+        return;
+      }
+
+      // checking for valid non-zero inputs
       const loan = parseFloat(this.formData.loan);
-      // MUST CHANGE THIS IS A PLACEHOLDER
-      this.totalDownpayment = propertyPrice - loan;
-      
-      // Ensure the values are valid numbers
+      const duration = parseFloat(this.formData.loanTenure);
+      const rate = parseFloat(this.formData.interestRate);
+
+      if (!isNaN(duration) && duration == 0) {
+        alert('Error: The duration has to be more than a year. Banks do not allow loans of 0 years.');
+        return;
+      } 
+
+      if (!isNaN(duration) && duration >= 100) {
+        alert('Error: The duration has to be less than a hundred years. Banks do not allow personal loans that will exceed the average human lifespan.');
+        return;
+      } 
+
+      if (!isNaN(rate) && rate <= 0) {
+        alert('Error: The rate has to be more than zero percent. Banks do not allow personal loans at such low rates.');
+        return;
+      } 
+
+      if (!isNaN(rate) && rate > 30) {
+        alert('Error: Banks do not allow personal loans of such high margins.');
+        return;
+      } 
+
+      if (isNaN(loan) || isNaN(duration) || isNaN(rate)) {
+        alert('Error: The mortgage portion of the calculator will not work unless you input a valid number for the loan, duration and/or rate field.');
+        return;
+      }
+
+      if (!isNaN(loan) && loan < 100000) {
+        alert('Error: Local banks do not allow for loans less than $100,000. More information available at Redbrick.sg.');
+        return;
+      }
+
       if (!isNaN(propertyPrice) && !isNaN(loan) && propertyPrice > 0) {
-        this.downpaymentPercentage = parseFloat(((propertyPrice - loan) / propertyPrice) * 100).toFixed(1);
-        this.loanPercentage = parseFloat((loan / propertyPrice) * 100).toFixed(1);
+        if (propertyPrice < loan) {
+          alert('Error: It is not prudent to borrow more money than you need.');
+          return;
+        } else {
+          this.downpaymentPercentage = parseFloat(((propertyPrice - loan) / propertyPrice) * 100).toFixed(1);
+          this.loanPercentage = parseFloat((loan / propertyPrice) * 100).toFixed(1);
+        }
+      }
+
+      if (!isNaN(loan) && !isNaN(duration) && !isNaN(rate)) {
+        const helper = loan * ((1 + (rate/100))**duration);
+        this.totalMortgage = (helper/(duration * 12)).toFixed(2);
+        this.mortgagePrincipal = (loan/(duration * 12)).toFixed(2);
+        this.mortgagePrincipalPercent = parseFloat((this.mortgagePrincipal / this.totalMortgage) * 100).toFixed(1);
+        // completed by induction
+        this.mortgageInterest = (this.totalMortgage - this.mortgagePrincipal).toFixed(2);
+        this.mortgageInterestPercent = parseFloat((this.mortgageInterest / this.totalMortgage) * 100).toFixed(1);
       }
     },
     calculateDownpayment() {
       return (this.upfrontCostsPercentage / 100) * this.totalCost;
     },
+    checkWindowWidth() {
+      if (window.innerWidth < 1300) {
+        alert(`Please increase the width of the window for optimal viewing experience. Current width: ${window.innerWidth}px. Optimal width: 1300px.`);
+      }
+    }
+  },
+  mounted() {
+    this.checkWindowWidth(); // Perform an initial check
+    setInterval(this.checkWindowWidth, 20); // Check every 2 seconds
   }
-};
+}
 
 </script>
 
@@ -322,7 +413,9 @@ export default {
 .content {
   margin-top: 25px;
   margin-left: 40px;
+  min-width: 300px;
 }
+
 .content h4 {
   /* Style for the descriptive text above the dropdowns */
   margin: 20px 0;
@@ -332,7 +425,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: flex-start; /* or 'center' if you want the items centered */
-  margin-bottom: 60px; /* Adjust as necessary */
+  margin-bottom: 20px; /* Adjust as necessary */
 }
 
 .search-filter-area select, .search-filter-area button, .financial-calculator-button button, #modal-right button {
@@ -348,6 +441,15 @@ export default {
   cursor: pointer; /* Change the cursor to indicate the button is clickable */
   margin-left: 40px;
   background-color: #E69B9B;
+  color: white;
+}
+
+#disclaimerbutton {
+  width: 150px;
+  padding: 10px 20px; /* Same padding as the links for visual consistency */
+  border-radius: 25px;
+  border: 1px solid #ccc;
+  background-color: black;
   color: white;
 }
 
@@ -367,6 +469,49 @@ export default {
 .search-output {
   margin-top: 50px;
 }
+
+.disclaimerModal {
+  box-sizing: border-box; /* Include padding and borders in the element's total width and height */
+  display: flex;
+  justify-content: space-between;
+  padding: 40px;
+  padding-right: 80px;
+  align-items: stretch;
+  background-color: #fefefe;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  width: 70vw; /* 80% of the viewport width */
+  height: 30vh; /* 70% of the viewport height for a fixed size */
+  margin: auto;
+  overflow: hidden;
+  position: fixed; /* To ensure it's placed relative to the viewport */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -85%); /* Center the modal */
+  z-index: 1000; /* Ensure it's above other content */
+}
+
+.sizeModal {
+  box-sizing: border-box; /* Include padding and borders in the element's total width and height */
+  display: flex;
+  justify-content: space-between;
+  padding: 40px;
+  padding-right: 80px;
+  align-items: stretch;
+  background-color: #fefefe;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  width: 70vw; /* 80% of the viewport width */
+  height: 30vh; /* 70% of the viewport height for a fixed size */
+  margin: auto;
+  overflow: hidden;
+  position: fixed; /* To ensure it's placed relative to the viewport */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -85%); /* Center the modal */
+  z-index: 1000; /* Ensure it's above other content */
+}
+
 .modal {
   box-sizing: border-box; /* Include padding and borders in the element's total width and height */
   display: flex;
@@ -394,6 +539,7 @@ export default {
   align-items: center; /* Center children horizontally */
   padding: 20px; /* Padding inside the modal */
   margin: auto; /* Center the modal in the available space */
+  width: 40vw;
 }
 
 #Modal-Form {
