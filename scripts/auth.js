@@ -2,6 +2,8 @@
 import { auth, app } from './firebase.js'; // Import the auth instance
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 import { getAuth, sendEmailVerification, updateEmail } from "firebase/auth";
+import { defineStore } from 'pinia';
+
 
 
 export async function signIn(email, password) {
@@ -90,9 +92,17 @@ export async function register(email, password) {
     } catch (error) {
         console.error("Error creating user:", error.message);
         // Here, you might want to show an alert for different types of errors
+        // Check for the "email already in use" error and alert the user
+        if (error.code === 'auth/email-already-in-use') {
+            alert("The email address is already in use by another account.");
+        } else {
+            // Handle other types of errors (optional)
+            alert("An error occurred during registration.");
+        }
         throw(error);
     }
 }
+
 
 // Handle authentication state changes
 onAuthStateChanged(auth, (user) => {

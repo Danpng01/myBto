@@ -33,14 +33,14 @@
         user: null,
         // Initialize all tasks, possibly from a local source or hardcoded
         allTasks: [
-          { id: 1, name: 'Check Eligibility', completed: false, inProgress: false, link: '' },
-          { id: 2, name: 'Financial Planning', completed: false, inProgress: false, link: 'https://www.hdb.gov.sg/residential/buying-a-flat/buying-procedure-for-new-flats/timeline/plan-your-finances' },
-          { id: 3, name: 'Look out for sales launches', completed: false, inProgress: false, link: 'https://www.hdb.gov.sg/about-us/news-and-publications/press-releases/HDB-Launches-5714-Flats-in-Feb-2024-BTO-and-SBF-Exercises' },
-          { id: 4, name: 'Submit application', completed: false, inProgress: false, link: 'https://www.hdb.gov.sg/residential/buying-a-flat/buying-procedure-for-new-flats/application' },
-          { id: 5, name: 'Receive application outcome', completed: false, inProgress: false, link: 'https://dollarsandsense.sg/bto-application-edition-step-step-guide-buying-hdb-bto-flat/#:~:text=The%20outcome%20of%20your%20BTO,to%20choose%20your%20BTO%20flat.' },
-          { id: 6, name: 'Book flat', completed: false, inProgress: false, link: 'https://www.hdb.gov.sg/residential/buying-a-flat/buying-procedure-for-new-flats/booking-of-flat' },
-          { id: 7, name: 'Sign Agreement for Lease', completed: false, inProgress: false, link: 'https://www.hdb.gov.sg/residential/buying-a-flat/buying-procedure-for-new-flats/sign-agreement-for-lease' },
-          { id: 8, name: 'Collect keys to flat', completed: false, inProgress: false, link: 'https://www.hdb.gov.sg/residential/buying-a-flat/buying-procedure-for-new-flats/key-collection' },
+          { id: 1, name: 'Check Eligibility', completed: false, inProgress: false},
+          { id: 2, name: 'Financial Planning', completed: false, inProgress: false},
+          { id: 3, name: 'Look out for sales launches', completed: false, inProgress: false},
+          { id: 4, name: 'Submit application', completed: false, inProgress: false},
+          { id: 5, name: 'Receive application outcome', completed: false, inProgress: false},
+          { id: 6, name: 'Book flat', completed: false, inProgress: false},
+          { id: 7, name: 'Sign Agreement for Lease', completed: false, inProgress: false},
+          { id: 8, name: 'Collect keys to flat', completed: false, inProgress: false},
         ],
       };
     },
@@ -54,8 +54,13 @@
             this.user = user;
             this.loadTasksFromFirestore();
           } else {
+            this.allTasks = this.allTasks.map(task => ({ 
+            id: task.id,
+            name: task.name,
+            completed: false,
+            inProgress: false
+          }));
             this.user = null;
-            this.tasks = [];
           }
         });
       },
@@ -137,8 +142,8 @@
       tasks() {
         // If you want to separate out a computed property for tasks
         return this.allTasks;
-      },
-    },
+      }
+    }
   };
   </script>
   

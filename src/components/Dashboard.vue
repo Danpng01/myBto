@@ -2,9 +2,18 @@
   <div class="dashboard-container">
     <div class="header">
       <h1 class="title">My Dashboard</h1>
-      <v-btn icon class="notification-button" @click="goToWebsite">
+      <v-btn icon class="notification-button" @click="toggleNotifications">
           <v-icon>mdi-bell-outline</v-icon>
       </v-btn>
+      <div v-if="showNotifications" class="notifications-container">
+        <div v-if="loadingNotifications" class="notification-title">Fetching notes...</div>
+        <div v-else>
+          <h2 class="notification-title">{{ notificationTitle }}</h2>
+          <div v-for="notification in notifications" :key="notification.id" class="notification-item">
+            {{ notification.title }}
+          </div>
+        </div>
+      </div>
     </div>
     <div class="checkbox-labels">
         <span class="checkbox-label">Completed</span>
@@ -14,10 +23,9 @@
       <ul>
         <li v-for="(task, index) in tasks" :key="task.id" class="task-item">
           <span class="task-index">{{ index + 1 }}.</span>
-          <span :class="{ 'task-name': true, 'completed': task.completed, 'clickable': task.link === '' }" @click="task.link === '' ? redirectToComponent(task) : null">
-            <router-link v-if="task.link === ''" :to="{ name: task.routeName }">{{ task.name }}</router-link>
-            <a v-else :href="task.link" target="_blank">{{ task.name }}</a>
-          </span>
+          <router-link :to="{ name: getRouteName(task.id) }" class="task-name" v-bind:class="{ 'completed': task.completed }">
+            {{ task.name }}
+          </router-link>
           <v-checkbox v-model="task.completed" :id="'task-' + task.id" class="task-checkbox"
             color="success"
             base-color="green"
@@ -40,9 +48,11 @@
 import { VCheckbox, VBadge, VBtn, VIcon } from 'vuetify/components'
 
 export default {
+  // eslint-disable-next-line vue/multi-word-component-names
   name: 'Dashboard',
   components: {
     VCheckbox,
+    // eslint-disable-next-line vue/no-unused-components
     VBadge,
     VBtn,
     VIcon
@@ -50,27 +60,110 @@ export default {
   props: {
     tasks: Array
   },
+  data() {
+    return {
+      showNotifications: false,
+      notifications: [],
+      loadingNotifications: false,
+      notificationTitle: "Recent Press Release notes:"
+    };
+  },
   methods: {
     updateTask(taskIndex) {
-      // Emit an event with the updated task
       this.$emit('task-updated', this.tasks[taskIndex]);
     },
     goToWebsite() {
-      window.open('https://homes.hdb.gov.sg/home/landing', '_blank');
+      window.open('https://www.hdb.gov.sg/about-us/news-and-publications/press-releases', '_blank');
     },
-    redirectToComponent(task) {
-      // Here you need to define where to redirect when the link is empty
-      // For example, if you have a route named 'CheckEligibility' for task 1:
-      if (task.id === 1) {
-        this.$router.push({ name: 'CheckEligibility' });
+    getRouteName(taskId) {
+      const taskRouteMap = {
+        1: 'CheckEligibility',
+        2: 'FinancialPlanning',
+        3: 'SalesLaunches',
+        4: 'Application',
+        5: 'ApplicationOutcome',
+        6: 'BookFlat',
+        7: 'Lease',
+        8: 'Keys',
+      };
+
+      return taskRouteMap[taskId] || '';
+    },
+    toggleNotifications() {
+      this.showNotifications = !this.showNotifications;
+      console.log(this.showNotifications)
+      if (this.showNotifications) {
+        this.fetchNotifications();
       }
-      // Add more conditions if there are other tasks with different routes
+    },
+    async fetchNotifications() {
+      try {
+        this.loadingNotifications = true;
+        const response = await fetch('/api/notifications');
+        if (!response.ok) throw new Error('Network response was not ok');
+        this.notifications = await response.json();
+        console.log('Notifications fetched:', this.notifications);
+      } catch (error) {
+        console.error('Failed to fetch notifications:', error);
+      } finally {
+        this.loadingNotifications = false;
+      }
     },
   }
 };
 </script>
 
 <style scoped>
+
+/* Custom scrollbar styles */
+.notifications-container::-webkit-scrollbar {
+  width: 8px; /* width of the entire scrollbar */
+}
+
+.notifications-container::-webkit-scrollbar-track {
+  background: transparent; /* color of the tracking area */
+}
+
+.notifications-container::-webkit-scrollbar-thumb {
+  background-color: #bfbfbf; /* color of the scroll thumb */
+  border-radius: 20px; /* roundness of the scroll thumb */
+  border: 3px solid transparent; /* creates padding around scroll thumb */
+}
+
+
+.notification-title {
+  font-size: 17px;
+  font-weight: bold;
+}
+
+.notifications-container {
+  position: absolute;
+  padding: 10px;
+  top: 220px; /* Adjust this value to position the container below the bell icon */
+  right: 70px;  /* Align to the right edge of the .header container */
+  background-color: #D9D9D9;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  width: 300px; /* Adjust as needed */
+  z-index: 100; /* Ensure this is below the z-index of the notification button if overlapping occurs */
+  display: block; /* This makes the container visible when showNotifications is true */
+  max-height: 300px; /* Set a fixed maximum height to show only three items at a time */
+  overflow-y: auto; /* Enable vertical scrolling */
+}
+
+.notification-item {
+  padding: 5px;
+  border-bottom: 1px solid #eee;
+  background: #F9F9F9; /* Light gray background */
+  margin-bottom: 10px; /* Spacing between items */
+  border-radius: 8px; /* Rounded corners like in the example */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle box shadow */
+  font-size: 14px;
+}
+
 .dashboard-container {
   display: flex;
   flex-direction: column;
@@ -85,11 +178,11 @@ export default {
 }
 
 .notification-button {
-  position: absolute; /* Absolute positioning relative to the closest positioned ancestor */
-  top: 150px; /* Adjust as needed */
-  right: 150px; /* Adjust as needed */
-  background-color: transparent; /* Remove any background */
-  min-width: 0; /* Remove any minimum width requirements */
+  position: absolute;
+  top: 150px;
+  right: 70px;
+  background-color: transparent;
+  min-width: 0;
 }
 
 .tasks {
@@ -104,7 +197,7 @@ export default {
 .task-item {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* This will space out the items */
+  justify-content: space-between;
   margin-bottom: 25px;
 }
 
@@ -114,13 +207,11 @@ export default {
 }
 
 .task-name {
+  text-decoration: underline;
+  color: black;
+  cursor: pointer;
   flex-grow: 1;
   margin-right: 150px; 
-}
-
-.task-name a {
-  text-decoration: underline;
-  color: black; 
 }
 
 .task-name.completed {
@@ -129,7 +220,7 @@ export default {
 }
 
 .task-checkbox { 
-  margin-right: 105px; /* Adjust spacing as needed */
+  margin-right: 105px;
 }
 
 .checkbox-labels {
@@ -141,11 +232,11 @@ export default {
 }
 
 .checkbox-label.inProgress-label {
-  margin-left: 60px; /* Adjust as needed */
+  margin-left: 60px;
 }
 
 .checkbox-label,
 .checkbox-label.inProgress-label {
-  font-weight: bold; /* This will make the text bold */
+  font-weight: bold;
 }
 </style>
