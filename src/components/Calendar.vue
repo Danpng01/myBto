@@ -1,4 +1,7 @@
 <template>
+  <div class = "calendar-heading">
+    <h1>My Calendar</h1>
+  </div>
   <div class="container">
     <div class="left">
       <div class="calendar">
@@ -23,16 +26,16 @@
           <div
             v-for="(day, index) in daysOfMonth"
             :key="index"
-            :class="['day', day.class, { event: hasEvent(day.date) }]"
+            :class="['day', day.class, { event: day.hasEvent }]"
             @click="selectDay(day)"
           >
             <span>{{ day.date }}</span>
-            <span v-if="foundDay" class="event-dot"></span>
+            <!-- <span v-if="day.hasEvent" class="event-dot"></span> -->
           </div>
         </div>
         <div class="goto-today">
           <div class="goto">
-            <input type="text" placeholder="mm/yyyy" class="date-input" v-model="inputDate" @input="formatInputDate" />
+            <input type="text" placeholder="mm/yyyy" class="date-input" v-model="inputDate" @keyup="formatInputDate" />
             <button class="goto-btn" @click="gotoDate">Go</button>
           </div>
           <button class="today-btn" @click="goToToday">Today</button>
@@ -46,14 +49,49 @@
       </div>
       <div class="events">
         <div v-for="(event, index) in eventsOfSelectedDay" :key="event.title" class="event" @click="deleteEvent(index)">
+          <button @click.stop="editEvent(event, index)" class = "edit-event-btn">Edit</button>
           <div class="title">
             <i class="fas fa-circle"></i>
             <h3 class="event-title">{{ event.title }}</h3>
           </div>
           <div class="event-time">
-            <span class="event-time">{{ event.timeFrom }} to {{ event.timeTo }}</span>
+            <span class="event-time">{{ event.startTime }} to {{ event.endTime }}</span>
           </div>
         </div>
+
+        <div v-if="editingEvent" class="event-form-wrapper active">
+          <div class="event-form-header">
+            <div class="title">Edit Event</div>
+            <i class="fas fa-times close" @click="closeEditForm"></i>
+          </div>
+          <div class="event-form-body">
+            <div class="event-form-input">
+              <input type="text" placeholder="Event Name" class="event-name" v-model="editingEvent.title" />
+            </div>
+            <div class="event-form-input">
+              <input
+                type="text"
+                placeholder="Event Time From"
+                class="event-time-from"
+                v-model="editingEvent.startTime"
+                @blur="validateTimes"
+              />
+            </div>
+            <div class="event-form-input">
+              <input
+                type="text"
+                placeholder="Event Time To"
+                class="event-time-to"
+                v-model="editingEvent.endTime"
+                @blur="validateTimes"
+              />
+            </div>
+          </div>
+          <div class="event-form-footer">
+            <button class="save-event-btn" @click="saveEvent">Save Changes</button>
+          </div>
+        </div>
+
         <div v-if="eventsOfSelectedDay.length === 0" class="no-event">
           <h3>No Events</h3>
         </div>
@@ -77,6 +115,7 @@
             placeholder="Event Time From"
             class="event-time-from"
             v-model="newEvent.startTime"
+            @blur="validateTimes"
           />
         </div>
         <div class="add-event-input">
@@ -85,6 +124,7 @@
             placeholder="Event Time To"
             class="event-time-to"
             v-model="newEvent.endTime"
+            @blur="validateTimes"
           />
         </div>
       </div>
@@ -97,10 +137,10 @@
 
 <script>
 import { db, auth } from '../../scripts/firebase.js'; // Import the auth instance
-import { collection, addDoc, getDocs, query, where, deleteDoc, doc } from 'firebase/firestore'; // Import Firestore functions
+import { collection, addDoc, getDocs, query, where, deleteDoc, doc, updateDoc } from 'firebase/firestore'; // Import Firestore functions
 
 export default {
-  name: "Calendar",
+  name: "MyCalendar",
   data() {
     return {
       today: new Date(),
@@ -111,6 +151,8 @@ export default {
       showAddEvent: false,
       newEvent: { title: '', startTime: '', endTime: '' },
       inputDate: '',
+      timeError: '',
+      editingEvent: null,
     };
   },
   watch: {
@@ -120,6 +162,7 @@ export default {
     'newEvent.endTime'(newValue) {
       this.newEvent.endTime = this.formatTime(newValue);
     },
+
   },
   computed: {
     monthYear() {
@@ -149,9 +192,11 @@ export default {
 
       // Days of the current month
       for (let i = 1; i <= totalDaysOfCurrentMonth; i++) {
+        let hasEvent = this.hasEvent(i, this.currentMonth, this.currentYear); 
         days.push({
           date: i,
           class: this.selectedDay === i ? "active" : "",
+          hasEvent, 
         });
       }
 
@@ -194,10 +239,55 @@ export default {
     },
   },
   methods: {
+    closeEditForm() {
+      this.editingEvent = null; // This will close the edit form
+    },
+    editEvent(event, index) {
+      // Set the editing event to the selected event
+      this.editingEvent = { ...event, index };
+      // Now, you can use editingEvent to bind to your form fields
+    },
+    saveEvent() {
+      const eventRef = doc(db, 'events', this.editingEvent.id);
+      updateDoc(eventRef, {
+        title: this.editingEvent.title,
+        startTime: this.editingEvent.startTime,
+        endTime: this.editingEvent.endTime,
+        // Any other properties you want to update
+      }).then(() => {
+        console.log('Event updated successfully');
+        // Reload your events here or update the local state
+        this.fetchEvents();
+      }).catch(error => {
+        console.error('Error updating event: ', error);
+      });
+    },
+    convertTimeToDate(timeStr) {
+      const [hours, minutes] = timeStr.split(':');
+      const date = new Date(this.currentYear, this.currentMonth, this.selectedDay, parseInt(hours), parseInt(minutes));
+      return date;
+    },
+    validateTimes() {
+      const startTime = this.convertTimeToDate(this.newEvent.startTime);
+      const endTime = this.convertTimeToDate(this.newEvent.endTime);
+
+      if (startTime >= endTime) {
+        this.timeError = 'End time must be later than start time.';
+      } else {
+        this.timeError = ''; // Clear the error message if times are valid
+      }
+    },
     toggleAddEvent() {
       this.showAddEvent = !this.showAddEvent;
     },
     addEvent() {
+      const startTime = this.convertTimeToDate(this.newEvent.startTime);
+      const endTime = this.convertTimeToDate(this.newEvent.endTime);
+
+      if (endTime <= startTime) {
+        alert('The end time must be after the start time.');
+        return; // Stop the method if times are not valid
+      }
       try {
           // Check if user is authenticated
           const user = auth.currentUser;
@@ -289,17 +379,31 @@ export default {
       this.currentYear = new Date().getFullYear();
       this.selectedDay = new Date().getDate();
     },
-    formatInputDate() {
-      // This method replaces non-numeric characters with nothing and formats the input
-      let formatted = this.inputDate.replace(/[^0-9/]/g, "");
-      if (formatted.length === 2) {
-        formatted += "/";
+    formatInputDate(event) {
+      let rawInput = this.inputDate.replace(/[^0-9]/g, ""); // Strip all non-numeric characters
+      let formatted = "";
+
+      // Add a slash after the month (first two digits)
+      if (rawInput.length > 2) {
+        formatted = rawInput.substring(0, 2) + '/' + rawInput.substring(2);
+      } else {
+        formatted = rawInput;
       }
+
+      // Prevent the formatted string from exceeding 7 characters (mm/yyyy)
       if (formatted.length > 7) {
-        formatted = formatted.slice(0, 7);
+        formatted = formatted.substring(0, 7);
       }
-      // This ensures Vue reactivity by directly updating the data property
-      this.inputDate = formatted;
+
+      // Allow deletion of the slash if backspacing
+      if (event.keyCode === 8 && this.inputDate.endsWith('/')) {
+        formatted = formatted.substring(0, formatted.length - 1);
+      }
+
+      // Only update if there's a change to reduce Vue reactivity overhead
+      if (formatted !== this.inputDate) {
+        this.inputDate = formatted;
+      }
     },
     gotoDate() {
       const dateArr = this.inputDate.split("/");
@@ -330,20 +434,49 @@ export default {
         console.error('Error deleting event: ', error);
       }
     },
-    hasEvent(date) {
-      // This is a simplified example. You'll need to adjust it based on your actual data structure.
-      return this.events.some(event => new Date(event.date).getDate() === date);
+    hasEvent(date, month, year) {
+      return this.events.some(event => 
+        event.date.getDate() === date && 
+        event.date.getMonth() === month &&
+        event.date.getFullYear() === year
+      );
     },
     formatTime(value) {
-      let numericValue = value.replace(/\D/g, ''); // Remove non-numeric characters
+      let numericValue = value.replace(/\D/g, '').substring(0, 4); // Remove non-digits and limit length
       let formattedValue = '';
+      let hours = '';
+      let minutes = '';
 
-      // Insert colon after every 2 digits but limit to HH:mm format
-      if (numericValue.length > 0) {
-        formattedValue += numericValue.substring(0, 2); // Hours part
-      }
+      // Determine the hours and minutes based on the length of numeric input
       if (numericValue.length > 2) {
-        formattedValue += ':' + numericValue.substring(2, 4); // Minutes part
+        hours = numericValue.substring(0, 2);  // First two digits for hours
+        minutes = numericValue.substring(2, 4); // Next two digits for minutes
+      } else {
+        hours = numericValue.substring(0, 2);  // All digits considered as hours if less than 2
+      }
+
+      // Pad hours if two digits are entered
+      if (hours.length === 2) {
+        let numericHours = parseInt(hours, 10);
+        if (numericHours > 23) numericHours = 23; // Cap hours at 23
+        hours = numericHours.toString().padStart(2, '0');
+      }
+
+      // Pad minutes if two digits are entered
+      if (minutes.length === 2) {
+        let numericMinutes = parseInt(minutes, 10);
+        if (numericMinutes > 59) numericMinutes = 59; // Cap minutes at 59
+        minutes = numericMinutes.toString().padStart(2, '0');
+      }
+
+      // Combine hours and minutes with colon
+      if (hours.length === 2 && minutes) {
+        formattedValue = `${hours}:${minutes}`;
+      } else {
+        formattedValue = hours;
+        if (hours.length === 2 && numericValue.length >= 2) {
+          formattedValue += ':'; // Append colon when two digits for hours are entered
+        }
       }
 
       return formattedValue;
@@ -383,21 +516,47 @@ position: relative;
 min-height: 100vh;
 display: flex;
 align-items: center;
-justify-content: center;
+justify-content: flex-start;
+flex-direction: column;
 padding-bottom: 30px;
 background-color: #e2e1dc;
+}
+.calendar-heading {
+  display: flex;
+  width: 0%;
+  margin-bottom: 20px;
+  margin-top: 30px; /* Spacing between the header and the calendar */
+  margin-left: 20px;
+}
+.calendar-heading h1 {
+  font-size: 10px;
+  white-space: nowrap; /* Prevents the text from wrapping */
+}
+
+@media screen and (max-width: 768px) { /* Adjust as needed */
+  .calendar-heading h1 {
+    font-size: smaller; /* or any specific size */
+  }
+}
+
+.calendar-heading h1 {
+  font-size: 2.5rem;
+  color: var(--primary-clr);
 }
 .container {
 position: relative;
 width: 1200px;
+margin-right: auto;
+margin-left: 0;
 min-height: 850px;
-margin: 0 auto;
 padding: 5px;
 color: #fff;
 display: flex;
 border-radius: 10px;
 background-color: #373c4f;
-margin-bottom: 20%;
+margin-bottom: 30%;
+transform: scale(0.9);
+margin-top: 5%;
 }
 .left {
 width: 60%;
@@ -578,7 +737,8 @@ border: 1px solid var(--primary-clr);
 .calendar .goto-today .goto .goto-btn {
   border: 1px solid black;
   border-radius: 5px;
-  padding: 7px;
+  padding: 2px;
+  margin-left: 2px;
 }
 .calendar .goto-today .goto input {
 width: 100%;
@@ -713,6 +873,7 @@ transform: translateY(-50%);
 .events .event:hover::after {
 display: flex;
 }
+
 .add-event {
 position: absolute;
 bottom: 30px;
@@ -746,6 +907,8 @@ font-size: 1.5rem;
 font-weight: 500;
 color: #878895;
 }
+
+.event-form-wrapper,
 .add-event-wrapper {
 position: absolute;
 bottom: 100px;
@@ -758,9 +921,16 @@ background-color: #fff;
 transform: translateX(-50%);
 transition: max-height 0.5s ease;
 }
+.event-form-wrapper {
+  width: 70%;
+  transform: translateX(-90%);
+}
+.event-form-wrapper.active,
 .add-event-wrapper.active {
 max-height: 300px;
 }
+
+.event-form-header,
 .add-event-header {
 width: 100%;
 height: 50px;
@@ -771,17 +941,23 @@ padding: 0 20px;
 color: #373c4f;
 border-bottom: 1px solid #f5f5f5;
 }
+.event-form-header.close,
 .add-event-header .close {
 font-size: 1.5rem;
 cursor: pointer;
 }
+
+.event-form-header .close:hover,
 .add-event-header .close:hover {
 color: var(--primary-clr);
 }
+
+.event-form-header .title,
 .add-event-header .title {
 font-size: 1.2rem;
 font-weight: 500;
 }
+.event-form-body,
 .add-event-body {
 width: 100%;
 height: 100%;
@@ -790,6 +966,7 @@ flex-direction: column;
 gap: 5px;
 padding: 20px;
 }
+.event-form-body .event-form-input,
 .add-event-body .add-event-input {
 width: 100%;
 height: 40px;
@@ -798,6 +975,8 @@ align-items: center;
 justify-content: space-between;
 gap: 10px;
 }
+
+.event-form-body .event-form-input input,
 .add-event-body .add-event-input input {
 width: 100%;
 height: 100%;
@@ -809,21 +988,26 @@ font-size: 1rem;
 font-weight: 400;
 color: #373c4f;
 }
+.event-form-body .event-form-input input::placeholder,
 .add-event-body .add-event-input input::placeholder {
 color: #a5a5a5;
 }
+.event-form-body .event-form-input input:focus,
 .add-event-body .add-event-input input:focus {
 border-bottom: 1px solid var(--primary-clr);
 }
+.event-form-body .event-form-input input:focus::placeholder,
 .add-event-body .add-event-input input:focus::placeholder {
 color: var(--primary-clr);
 }
+.event-form-footer,
 .add-event-footer {
 display: flex;
 align-items: center;
 justify-content: center;
 padding: 20px;
 }
+.event-form-footer .save-event-btn,
 .add-event-footer .add-event-btn {
 height: 40px;
 font-size: 1rem;
@@ -837,11 +1021,27 @@ cursor: pointer;
 padding: 5px 10px;
 border: 1px solid grey;
 }
+.event-form-footer .save-event-btn:hover,
 .add-event-footer .add-event-btn:hover {
 background-color: transparent;
 color: purple;
 box-shadow: 0 0 10px 2px grey;
 }
+
+.edit-event-btn {
+  position: absolute; /* Position the button absolutely within the .event div which should be relative */
+  left: 250px; /* Distance from the right edge of the .event div */
+  top: 20px; /* Distance from the top edge of the .event div */
+  padding: 5px 10px; /* Padding inside the button */
+  background-color: #f5f5f5; /* Light grey background */
+  color: #373c4f; /* Dark grey text color */
+  border: none; /* No border */
+  border-radius: 5px; /* Slightly rounded corners */
+  cursor: pointer; /* Pointer cursor on hover */
+  font-size: 0.8rem; /* Smaller font size */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Slight shadow for a 3D effect */
+}
+
 
 /* media queries */
 
