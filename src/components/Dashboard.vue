@@ -3,9 +3,33 @@
     <div class="header">
       <h1 class="title">My Dashboard</h1>
       <v-btn icon class="notification-button" @click="toggleNotifications">
+        <v-badge
+          color="red"
+          :content="upcomingEventCount"
+          overlap
+          offset-x="-5"
+          offset-y="-5"
+          v-if="upcomingEventCount > 0"
+        >
           <v-icon>mdi-bell-outline</v-icon>
+        </v-badge>
+        <v-icon v-else>mdi-bell-outline</v-icon>
       </v-btn>
       <div v-if="showNotifications" class="notifications-container">
+        <div v-if="loadingEvents" class="notification-title">Fetching events...</div>
+        <template v-else>
+        <!-- We use a template tag here so that it does not render an actual DOM element -->
+        <div v-if="events.length > 0">
+          <h2 class="notification-title">{{ eventTitle }}</h2>
+          <div v-for="event in events" :key="event.id" class="notification-item">
+            {{ event.title }} - {{ event.date }}
+          </div>
+        </div>
+          <h2 class="notification-title" v-else> -- No events -- </h2>
+        </template>
+
+        <hr>
+
         <div v-if="loadingNotifications" class="notification-title">Fetching notes...</div>
         <div v-else>
           <h2 class="notification-title">{{ notificationTitle }}</h2>
@@ -45,6 +69,8 @@
 </template>
 
 <script>
+import { db, auth } from '../../scripts/firebase'; // Adjust the path as necessary to point to your firebase.js file
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { VCheckbox, VBadge, VBtn, VIcon } from 'vuetify/components'
 
 export default {
@@ -64,9 +90,20 @@ export default {
     return {
       showNotifications: false,
       notifications: [],
+      events: [],
       loadingNotifications: false,
-      notificationTitle: "Recent Press Release notes:"
+      loadingEvents: false,
+      notificationTitle: "Recent Press Release notes:",
+      eventTitle: "Upcoming Events:"
     };
+  },
+  computed: {
+      upcomingEventCount() {
+        return this.events.length; // This will return the count of the events currently held in the state
+      },
+  },
+  mounted() {
+    this.fetchEvents(); // Fetch events as soon as the component mounts
   },
   methods: {
     updateTask(taskIndex) {
@@ -94,9 +131,13 @@ export default {
       console.log(this.showNotifications)
       if (this.showNotifications) {
         this.fetchNotifications();
+        this.fetchEvents();
       }
     },
     async fetchNotifications() {
+      if (this.notifications.length > 0) {
+        return;
+      }
       try {
         this.loadingNotifications = true;
         const response = await fetch('/api/notifications');
@@ -109,6 +150,45 @@ export default {
         this.loadingNotifications = false;
       }
     },
+    async fetchEvents() {
+      if (this.events.length > 0) {
+        return;
+      }
+      try {
+        this.loadingEvents = true;
+        // Fetch events from Firestore
+        await this.fetchEventsFromFirestore();
+      } catch (error) {
+        console.error('Failed to fetch notifications:', error);
+      } finally {
+        this.loadingEvents = false;
+      }
+    },
+    async fetchEventsFromFirestore() {
+      const userId = auth.currentUser.uid;
+      // console.log(userId)
+      const today = new Date();
+      const oneWeekLater = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7);
+      
+      const eventsRef = collection(db, 'events');
+      const q = query(eventsRef, where('userId', '==', userId));
+      
+      const snapshot = await getDocs(q);
+
+      const events = [];
+      snapshot.forEach(doc => {
+        const event = doc.data();
+        // console.log(event)
+        const eventDate = event.date.toDate();
+        // console.log(eventDate)
+        if (eventDate >= today && eventDate <= oneWeekLater) {
+          const formattedDate = eventDate.toLocaleDateString('en-US');
+          events.push({ ...event, id: doc.id, date: formattedDate });
+        }
+      });
+      this.events = events;
+    },
+
   }
 };
 </script>
