@@ -48,7 +48,7 @@
         <div class="event-date">{{ selectedDateString }}</div>
       </div>
       <div class="events">
-        <div v-for="(event, index) in eventsOfSelectedDay" :key="event.title" class="event" @click="deleteEvent(index)">
+        <div v-for="(event, index) in eventsOfSelectedDay" :key="event.id" class="event" @click="deleteEvent(event.id)">
           <button @click.stop="editEvent(event, index)" class = "edit-event-btn">Edit</button>
           <div class="title">
             <i class="fas fa-circle"></i>
@@ -346,6 +346,7 @@ export default {
             ...doc.data(),
             date: doc.data().date.toDate() // Convert timestamp to Date object
           }));
+        console.log(this.events)
       } catch (error) {
         console.error('Error fetching events: ', error);
       }
@@ -420,10 +421,10 @@ export default {
       }
       alert("Invalid Date");
     },
-    async deleteEvent(eventIndex) {
+    async deleteEvent(eventId) {
       try {
         // Delete the event from Firestore
-        const eventId = this.events[eventIndex].id;
+        console.log(eventId); // Log the id to ensure the correct id is passed
         // Delete the document from Firestore using its ID
         // Assuming 'events' is the name of your collection
         await deleteDoc(doc(db, 'events', eventId));
