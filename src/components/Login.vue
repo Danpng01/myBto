@@ -146,7 +146,6 @@ export default {
   height: 100%; /* Stretch the image to the height of the container */
   object-fit: cover; /* Cover the area without stretching the image */
   width: 100%; /* Take the full width to avoid repeating */
-  filter: blur(2px); /* Apply a slight blur effect */
   border: 1px solid black;
 }
 
