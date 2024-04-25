@@ -8,14 +8,14 @@ import { defineStore } from 'pinia';
 
 export async function signIn(email, password) {
     // Define the password validation function
-    // function isValidPassword(password) {
-    //     const minLength = 6;
-    //     const hasUpperCase = /[A-Z]/.test(password);
-    //     const hasLowerCase = /[a-z]/.test(password);
-    //     const hasNumbers = /\d/.test(password);
+    function isValidPassword(password) {
+        const minLength = 6;
+        const hasUpperCase = /[A-Z]/.test(password);
+        const hasLowerCase = /[a-z]/.test(password);
+        const hasNumbers = /\d/.test(password);
     
-    //     return password.length >= minLength && hasUpperCase && hasLowerCase && hasNumbers;
-    // }
+        return password.length >= minLength && hasUpperCase && hasLowerCase && hasNumbers;
+    }
     // Email validation function
     function isValidEmail(email) {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -29,10 +29,10 @@ export async function signIn(email, password) {
     }
 
     // Check if the password is valid
-    // if (!isValidPassword(password)) {
-    //     alert("Password must be at least 6 characters long, include uppercase letters, lowercase letters and numbers!");
-    //     throw new Error("Password invalid!"); // Stop the function execution if the password is invalid
-    // }
+    if (!isValidPassword(password)) {
+        alert("Password must be at least 6 characters long, include uppercase letters, lowercase letters and numbers!");
+        throw new Error("Password invalid!"); // Stop the function execution if the password is invalid
+    }
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         console.log(`Logged in as: ${userCredential.user.email}`);
@@ -57,14 +57,14 @@ export function logOut() {
 export async function register(email, password) {
 
     // Define the password validation function
-    // function isValidPassword(password) {
-    //     const minLength = 6;
-    //     const hasUpperCase = /[A-Z]/.test(password);
-    //     const hasLowerCase = /[a-z]/.test(password);
-    //     const hasNumbers = /\d/.test(password);
+    function isValidPassword(password) {
+        const minLength = 6;
+        const hasUpperCase = /[A-Z]/.test(password);
+        const hasLowerCase = /[a-z]/.test(password);
+        const hasNumbers = /\d/.test(password);
     
-    //     return password.length >= minLength && hasUpperCase && hasLowerCase && hasNumbers;
-    // }
+        return password.length >= minLength && hasUpperCase && hasLowerCase && hasNumbers;
+    }
     // Email validation function
     function isValidEmail(email) {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -78,10 +78,10 @@ export async function register(email, password) {
     }
 
     // Check if the password is valid
-    // if (!isValidPassword(password)) {
-    //     alert("Password must be at least 6 characters long, include uppercase letters, lowercase letters and numbers!");
-    //     throw new Error("Password invalid!"); // Stop the function execution if the password is invalid
-    // }
+    if (!isValidPassword(password)) {
+        alert("Password must be at least 6 characters long, include uppercase letters, lowercase letters and numbers!");
+        throw new Error("Password invalid!"); // Stop the function execution if the password is invalid
+    }
 
     // Attempt to create a new user with the provided email and password
     try {
