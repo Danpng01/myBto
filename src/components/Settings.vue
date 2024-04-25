@@ -72,6 +72,14 @@ export default {
     endChangePassword() {
       this.isChangingPassword = false;
     },
+    isValidPassword(password) {
+        const minLength = 6;
+        const hasUpperCase = /[A-Z]/.test(password);
+        const hasLowerCase = /[a-z]/.test(password);
+        const hasNumbers = /\d/.test(password);
+    
+        return password.length >= minLength && hasUpperCase && hasLowerCase && hasNumbers;
+    },
     async reauthenticateAndChangeEmail() {
 
       console.log("reauth")
@@ -112,6 +120,9 @@ export default {
         return;
       } else if (this.newUserPassword !== this.retypeUserPassword) {
         alert('Passwords do not match.');
+        return;
+      } else if (!this.isValidPassword(this.newUserPassword)) {
+        alert('Password must be at least 6 characters long, include uppercase letters, lowercase letters and numbers!');
         return;
       } else {
         const user = auth.currentUser;
